@@ -10,7 +10,7 @@ def display_difficulty_menu():
     print("\n=== Choix de la Difficulté ===")
     print("1. Facile : 9x9 avec 10 mines")
     print("2. Moyen : 16x16 avec 40 mines")
-    print("3. Difficile : 30x16 avec 99 mines")
+    print("3. Difficile : 16x30 avec 99 mines")
 
 
 def select_difficulty():
@@ -26,7 +26,7 @@ def select_difficulty():
             return (16, 16, 40, "moyenne")  # Ajout du nom de la difficulté
         elif difficulty == "3":
             print("\nDifficulté sélectionnée : Difficile")
-            return (30, 16, 99, "difficile")  # Ajout du nom de la difficulté
+            return (16, 30, 99, "difficile")  # Ajout du nom de la difficulté
         else:
             print("\nOption non valide. Veuillez choisir une difficulté parmi les options disponibles.")
 
@@ -34,6 +34,7 @@ def select_difficulty():
 def start_game():
     """Démarre la partie après avoir choisi la difficulté."""
     from Grid_Generator import generate_grid, display_grid, save_grid, create_display_grid  # Importer les fonctions nécessaires
+    from pygame_grid import interface,drawgrid
 
     rows, cols, mines, difficulty = select_difficulty()  # On récupère aussi le nom de la difficulté
     grid = generate_grid(rows, cols, mines)
@@ -45,8 +46,13 @@ def start_game():
     print(f"\nLa partie commence avec un plateau de {rows}x{cols} et {mines} mines.")
     display_grid(grid, display)
 
+    interface(cols, rows, grid, difficulty)
+
     # Sauvegarde de la grille avec la difficulté sélectionnée dans le nom du fichier
     save_grid(grid, difficulty)
+
+
+
 
 
 def handle_invalid_option():
