@@ -33,12 +33,17 @@ def select_difficulty():
 
 def start_game():
     """Démarre la partie après avoir choisi la difficulté."""
-    from Grid_Generator import generate_grid, display_grid, save_grid  # Importer les fonctions depuis le fichier approprié
+    from Grid_Generator import generate_grid, display_grid, save_grid, create_display_grid  # Importer les fonctions nécessaires
 
     rows, cols, mines, difficulty = select_difficulty()  # On récupère aussi le nom de la difficulté
     grid = generate_grid(rows, cols, mines)
-    print(f"\nLa partie commence avec un plateau de {rows}x{cols} et {mines} mines. Voici la grille :")
-    display_grid(grid)
+
+    # Créer la grille d'affichage (initialement avec des '*')
+    display = create_display_grid(rows, cols)
+
+    # Affichage de la grille de jeu et de la grille d'affichage côte à côte
+    print(f"\nLa partie commence avec un plateau de {rows}x{cols} et {mines} mines.")
+    display_grid(grid, display)
 
     # Sauvegarde de la grille avec la difficulté sélectionnée dans le nom du fichier
     save_grid(grid, difficulty)
