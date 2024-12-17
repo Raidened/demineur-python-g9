@@ -4,7 +4,6 @@ import json
 import os
 from time import sleep
 
-
 class Grid:
     def __init__(self, rows, cols, mines, difficulty):
         self.rows = rows
@@ -50,6 +49,7 @@ class Grid:
 
 class DisplayGrid:
     def __init__(self, rows, cols):
+        """Initialise la grille d'affichage avec des symboles '*'."""
         self.rows = rows
         self.cols = cols
         self.grid_display = self.create_display_grid()
@@ -69,6 +69,7 @@ class DisplayGrid:
 
 class Game:
     def __init__(self):
+        """Initialise le jeu avec les paramètres de difficulté et le jeu de la grille."""
         self.difficulty = ""
         self.rows = 0
         self.cols = 0
@@ -99,12 +100,40 @@ class Game:
             self.rows, self.cols, self.mines = 9, 9, 10
             self.difficulty = "facile"
 
+    def load_grid(self, folder="saved_grid"):
+        """Charge une grille depuis un fichier JSON dans un dossier donné."""
+        files = os.listdir(folder)
+        grid_files = [f for f in files if f.startswith('grid') and f.endswith('.json')]
+
+        if not grid_files:
+            print("Aucune grille sauvegardée trouvée.")
+            return None
+
+        latest_file = max(grid_files, key=lambda f: int(f.replace('grid', '').replace('.json', '').split('_')[1]))
+        filepath = os.path.join(folder, latest_file)
+
+        try:
+            with open(filepath, 'r') as file:
+                grid = json.load(file)
+            print(f"Grille rechargée depuis {latest_file}")
+            return grid
+        except json.JSONDecodeError:
+            print(f"Erreur de lecture dans le fichier {latest_file}")
+            return None
+
     def start_game(self):
         """Démarre la partie après avoir choisi la difficulté."""
         self.game_menu()
         self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)
         self.display = DisplayGrid(self.rows, self.cols)
+
+        # Sauvegarde de la grille
+        self.grid.save_grid()
+
+        # Affichage de la grille d'affichage à côté de la grille de jeu
         self.display.display(self.grid.grid)
+
+        # Attente d'un moment pour l'utilisateur avant de commencer la partie
         print("\nLa partie commence !")
         sleep(2)
 
@@ -140,6 +169,36 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine=Non
                         screen.blit(text, (y + 10, x + 5))
             else:
                 pygame.draw.rect(screen, WHITE, rect, 0)  # Case non révélée
+                if revealed[grid_y][grid_x]:
+                    if table[grid_x][grid_y] == "M":
+                        pygame.draw.rect(screen, RED, rect, 0)  # Fond rouge pour la mine
+                        pygame.draw.circle(screen, BLACK, rect.center, blocksize // 4)  # Dessiner une mine
+                    elif table[grid_x][grid_y] == 0:
+                        pygame.draw.rect(screen, GRAY, rect, 0)
+                        if grid_y < len(table[0]) - 1:
+                            revealed[grid_y + 1][grid_x] = True
+                        if grid_y > 0:
+                            revealed[grid_y - 1][grid_x] = True
+                        if grid_x < len(table) - 1:
+                            revealed[grid_y][grid_x + 1] = True
+                        if grid_x > 0:
+                            revealed[grid_y][grid_x - 1] = True
+                        if grid_y < len(table[0]) - 1 and grid_x < len(table) - 1:
+                            revealed[grid_y + 1][grid_x + 1] = True
+                        if grid_y < len(table[0]) - 1 and grid_x > 0:
+                            revealed[grid_y + 1][grid_x - 1] = True
+                        if grid_y > 0 and grid_x < len(table) - 1:
+                            revealed[grid_y - 1][grid_x + 1] = True
+                        if grid_y > 0 and grid_x > 0:
+                            revealed[grid_y - 1][grid_x - 1] = True
+                    else:
+                        pygame.draw.rect(screen, GRAY, rect, 0)  # Case sans mine
+                        if table[grid_x][grid_y] != 0:
+                            font = pygame.font.SysFont('Arial', 20)
+                            text = font.render(str(table[grid_x][grid_y]), True, BLACK)
+                            screen.blit(text, (y + 10, x + 5))
+                else:
+                    pygame.draw.rect(screen, WHITE, rect, 0)  # Case non révélée
 
             pygame.draw.rect(screen, BLACK, rect, 2)  # Bordure
 
@@ -175,6 +234,7 @@ def interface(nbcoln, nbline, table, game_instance):
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
     WINDOW_HEIGHT = nbline * 30
     WINDOW_WIDTH = nbcoln * 30
+    running = True
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Cases révélées
     lost_mine = None  # Variable pour stocker la position de la mine déclenchée
