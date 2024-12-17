@@ -3,6 +3,7 @@ import pygame
 import json
 import os
 from time import sleep
+from datetime import datetime
 
 class Grid:
     def __init__(self, rows, cols, mines, difficulty):
@@ -76,29 +77,24 @@ class Game:
         self.mines = 0
         self.grid = None
         self.display = None
+        self.player_name = ""
 
-    def game_menu(self):
-        """Le menu principal du jeu."""
-        print("=== Bienvenue dans le jeu de Démineur ===")
-        print("Choisissez une difficulté:")
-        print("1. Facile (9x9, 10 mines)")
-        print("2. Moyen (16x16, 40 mines)")
-        print("3. Difficile (30x30, 100 mines)")
+    def start_game(self, screen):
+        """Démarre la partie avec les paramètres déjà définis."""
+        # Initialize the grid and display
+        self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)
+        self.display = DisplayGrid(self.rows, self.cols)
 
-        choice = input("Entrez le numéro de la difficulté : ")
-        if choice == '1':
-            self.rows, self.cols, self.mines = 9, 9, 10
-            self.difficulty = "facile"
-        elif choice == '2':
-            self.rows, self.cols, self.mines = 16, 16, 40
-            self.difficulty = "moyen"
-        elif choice == '3':
-            self.rows, self.cols, self.mines = 30, 30, 100
-            self.difficulty = "difficile"
-        else:
-            print("Choix invalide. La difficulté par défaut 'facile' a été sélectionnée.")
-            self.rows, self.cols, self.mines = 9, 9, 10
-            self.difficulty = "facile"
+        # Fix the call to save the grid
+        self.save_grid(self.grid.grid, self.difficulty)
+
+        # Start the game interface
+        self.run(screen)
+
+    def run(self, screen):
+        """Lance l'interface du jeu."""
+        # Swap self.cols and self.rows to match the parameter order
+        interface(self.cols, self.rows, self.grid.get_grid(), self, screen)
 
     def load_grid(self, folder="saved_grid"):
         """Charge une grille depuis un fichier JSON dans un dossier donné."""
@@ -121,70 +117,73 @@ class Game:
             print(f"Erreur de lecture dans le fichier {latest_file}")
             return None
 
-    def start_game(self):
-        """Démarre la partie après avoir choisi la difficulté."""
-        self.game_menu()
-        self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)
-        self.display = DisplayGrid(self.rows, self.cols)
+    def save_score(self, score, difficulty):
+        scores_file = f"saved_grid/scores_{difficulty}.json"
+        try:
+            with open(scores_file, 'r') as file:
+                scores = json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            scores = []
 
-        # Sauvegarde de la grille
-        self.grid.save_grid()
+        scores.append({"name": self.player_name, "score": score, "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+        with open(scores_file, 'w') as file:
+            json.dump(scores, file)
 
-        # Affichage de la grille d'affichage à côté de la grille de jeu
-        self.display.display(self.grid.grid)
+    def save_grid(self, grid, difficulty):
+        grid_file = f"saved_grid/grid_{difficulty}.json"
+        with open(grid_file, 'w') as file:
+            json.dump(grid, file)
 
-        # Attente d'un moment pour l'utilisateur avant de commencer la partie
-        print("\nLa partie commence !")
-        sleep(2)
+    def end_game(self, score):
+        self.save_score(score, self.difficulty)
+        self.save_grid(self.grid.grid, self.difficulty)
+        print("Game over! Your score has been saved.")
 
-    def run(self):
-        """Lance l'interface du jeu."""
-        self.start_game()  # Démarre la partie
-        # Passez `self` comme `game_instance` à `interface`
-        interface(self.rows, self.cols, self.grid.get_grid(), self)
-
-def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine=None):
+def drawgrid(screen, table, revealed, blocksize, lost_mine=None):
     """Dessine la grille avec les mines et les cases révélées."""
     BLACK = (0, 0, 0)
     RED = (255, 0, 0)
     WHITE = (200, 200, 200)
     GRAY = (150, 150, 150)
-    blocksize = 30
 
-    for x in range(0, WINDOW_HEIGHT, blocksize):
-        for y in range(0, WINDOW_WIDTH, blocksize):
-            rect = pygame.Rect(y, x, blocksize, blocksize)
-            grid_x = y // blocksize
-            grid_y = x // blocksize
+    nbline = len(table)
+    nbcoln = len(table[0])
+
+    for y in range(nbline):
+        for x in range(nbcoln):
+            rect = pygame.Rect(x * blocksize, y * blocksize, blocksize, blocksize)
+            grid_x, grid_y = x, y  # Correct indexing
 
             if revealed[grid_y][grid_x]:
-                if table[grid_x][grid_y] == "M":
+                cell_value = table[grid_y][grid_x]  # Swap indices here
+                if cell_value == "M":
                     pygame.draw.rect(screen, RED, rect, 0)  # Fond rouge pour la mine
                     pygame.draw.circle(screen, BLACK, rect.center, blocksize // 4)  # Dessiner une mine
-                elif table[grid_x][grid_y] == 0:
+                elif cell_value == 0:
                     pygame.draw.rect(screen, GRAY, rect, 0)
-                    if grid_y < len(table[0]) - 1:
+                    if grid_y < len(table) - 1:
                         revealed[grid_y + 1][grid_x] = True
                     if grid_y > 0:
                         revealed[grid_y - 1][grid_x] = True
-                    if grid_x < len(table) - 1:
+                    if grid_x < len(table[0]) - 1:
                         revealed[grid_y][grid_x + 1] = True
                     if grid_x > 0:
                         revealed[grid_y][grid_x - 1] = True
-                    if grid_y < len(table[0]) - 1 and grid_x < len(table) - 1:
+                    if grid_y < len(table) - 1 and grid_x < len(table[0]) - 1:
                         revealed[grid_y + 1][grid_x + 1] = True
-                    if grid_y < len(table[0]) - 1 and grid_x > 0:
+                    if grid_y < len(table) - 1 and grid_x > 0:
                         revealed[grid_y + 1][grid_x - 1] = True
-                    if grid_y > 0 and grid_x < len(table) - 1:
+                    if grid_y > 0 and grid_x < len(table[0]) - 1:
                         revealed[grid_y - 1][grid_x + 1] = True
                     if grid_y > 0 and grid_x > 0:
                         revealed[grid_y - 1][grid_x - 1] = True
                 else:
                     pygame.draw.rect(screen, GRAY, rect, 0)  # Case sans mine
                     if table[grid_x][grid_y] != 0:
-                        font = pygame.font.SysFont('Arial', 20)
+                        font_size = max(12, blocksize // 2)
+                        font = pygame.font.SysFont('Arial', font_size)
                         text = font.render(str(table[grid_x][grid_y]), True, BLACK)
-                        screen.blit(text, (y + 10, x + 5))
+                        screen.blit(text, (x * blocksize + 10, y * blocksize + 5))
             else:
                 pygame.draw.rect(screen, WHITE, rect, 0)  # Case non révélée
 
@@ -217,22 +216,36 @@ def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
 
     return restart_button, quit_button
 
-
-def interface(nbcoln, nbline, table, game_instance):
+def interface(nbcoln, nbline, table, game_instance, screen):
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
-    WINDOW_HEIGHT = nbline * 30
-    WINDOW_WIDTH = nbcoln * 30
-    running = True
+    # Get the display resolution
+    infoObject = pygame.display.Info()
+    display_width, display_height = infoObject.current_w, infoObject.current_h
+
+    # Calculate the maximum block size to fit the grid within the display
+    margin = 100  # Margin to ensure the window is not too close to the screen edges
+    max_window_width = display_width - margin
+    max_window_height = display_height - margin
+
+    blocksize_w = max_window_width // nbcoln
+    blocksize_h = max_window_height // nbline
+    blocksize = int(min(blocksize_w, blocksize_h, 30))  # Limit the block size to 30 for smaller grids
+
+    WINDOW_WIDTH = blocksize * nbcoln
+    WINDOW_HEIGHT = blocksize * nbline
+
+    # Adjust the screen size
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Cases révélées
-    lost_mine = None  # Variable pour stocker la position de la mine déclenchée
+
+    revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]
+    lost_mine = None
     running = True
 
     while running:
         screen.fill((0, 0, 0))
 
-        # Affichage de la grille pendant la partie
-        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine)
+        # Pass the dynamic blocksize to drawgrid
+        drawgrid(screen, table, revealed, blocksize, lost_mine)
 
         pygame.display.flip()
 
@@ -244,14 +257,14 @@ def interface(nbcoln, nbline, table, game_instance):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Clic gauche
                     x, y = event.pos
-                    grid_x = x // 30
-                    grid_y = y // 30
+                    grid_x = x // blocksize
+                    grid_y = y // blocksize
 
                     # Révélation de la case
                     revealed[grid_y][grid_x] = True
 
                     # Si une mine est révélée, afficher la défaite
-                    if table[grid_x][grid_y] == "M":
+                    if table[grid_y][grid_x] == "M":
                         lost_mine = (grid_x, grid_y)  # Garder la position de la mine déclenchée
 
                         # Révéler toutes les mines après une défaite
@@ -260,24 +273,11 @@ def interface(nbcoln, nbline, table, game_instance):
                                 revealed[r][c] = True
 
                         # Afficher la grille complète avant de montrer le popup
-                        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine)
+                        drawgrid(screen, table, revealed, blocksize, lost_mine)
                         pygame.display.flip()
 
                         # Demander à l'utilisateur s'il veut recommencer
-                        restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
-                        quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
-
-                        pygame.draw.rect(screen, (0, 255, 0), restart_button)
-                        pygame.draw.rect(screen, (255, 0, 0), quit_button)
-
-                        font = pygame.font.SysFont(None, 30)
-                        restart_text = font.render("Recommencer", True, (0, 0, 0))
-                        quit_text = font.render("Quitter", True, (0, 0, 0))
-
-                        screen.blit(restart_text, (WINDOW_WIDTH // 2 - 60, WINDOW_HEIGHT // 2 + 10))
-                        screen.blit(quit_text, (WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT // 2 + 70))
-
-                        pygame.display.flip()
+                        restart_button, quit_button = game_over_popup(screen, "Vous avez perdu!", WINDOW_WIDTH, WINDOW_HEIGHT)
 
                         # Attendre l'action de l'utilisateur
                         waiting_for_action = True
@@ -290,16 +290,45 @@ def interface(nbcoln, nbline, table, game_instance):
                                     if event.button == 1:  # Clic gauche
                                         x, y = event.pos
                                         if restart_button.collidepoint(x, y):
-                                            # Relancer le jeu en réinitialisant tout le processus
-                                            game_instance.start_game()  # Redémarre le jeu
-                                            # Réinitialiser la grille
-                                            table = game_instance.grid.generate_grid()
-                                            revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Réinitialiser les cases révélées
-                                            lost_mine = None  # Réinitialiser la mine déclenchée
-                                            waiting_for_action = False
+                                            # Reset the game state without changing difficulty
+                                            running = False
+                                            game_instance.end_game(score=0)  # Save the game even if lost
+                                            game_instance.start_game(screen)  # Restart the game with the same difficulty
+                                            return
                                         elif quit_button.collidepoint(x, y):
-                                            running = False  # Quitter le jeu
-                                            waiting_for_action = False
-                        break  # Quitter la boucle pour arrêter le jeu
+                                            pygame.quit()
+                                            exit()
+                        return  # Exit the interface after handling game over
+
+def show_scores(screen, difficulty):
+    scores_file = f"saved_grid/scores_{difficulty}.json"
+    try:
+        with open(scores_file, 'r') as file:
+            scores = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        scores = []
+
+    screen.fill((0, 0, 0))
+    font = pygame.font.SysFont('Arial', 30)
+    y_offset = 50
+
+    for score in scores:
+        text = font.render(f"Name: {score['name']}, Score: {score['score']}, Date: {score['date']}", True, (255, 255, 255))
+        screen.blit(text, (50, y_offset))
+        y_offset += 40
+
+    pygame.display.flip()
+    sleep(5)  # Display the scores for 5 seconds
+
+def hall_of_fame(screen):
+    difficulties = ["facile", "moyen", "difficile"]
+    for difficulty in difficulties:
+        screen.fill((0, 0, 0))
+        font = pygame.font.SysFont('Arial', 40)
+        text = font.render(f"=== {difficulty.capitalize()} ===", True, (255, 255, 255))
+        screen.blit(text, (50, 20))
+        pygame.display.flip()
+        sleep(2)  # Display the difficulty title for 2 seconds
+        show_scores(screen, difficulty)
 
 
