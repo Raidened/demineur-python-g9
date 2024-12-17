@@ -2,6 +2,7 @@ import pygame
 from pygame_grid import Grid  # Importation de la classe Grid
 
 def startmenu():
+    print("Welcome to pygame menu")
     pygame.font.init()
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400
@@ -63,7 +64,6 @@ def diffmenu():
         screen.blit(text_diff, (103, 260))
 
 
-
         pygame.display.flip()
 
 
@@ -93,5 +93,4 @@ def diffmenu():
                         grid = Grid(30, 16, 99, difficulty)
                         grid.generate_grid()
                         interface(30, 16, grid.get_grid(), grid)
-
 startmenu()
