@@ -305,11 +305,30 @@ def interface(nbcoln, nbline, table, game_instance):
                                         elif quit_button.collidepoint(x, y):
                                             running = False  # Quitter le jeu
                                             waiting_for_action = False
+                    checkout = 0
+                    for r in range(nbline):
+                        for c in range(nbcoln):
+                            if revealed[r][c] or flagged[r][c]:
+                                checkout += 1
+                                print(checkout, "    ", nbcoln * nbline)
+                    if checkout == nbcoln * nbline:
+                        print("GG")
                 elif event.button == 3:
                     x, y = event.pos
                     grid_x = x // 30
                     grid_y = y // 30
-                    if not revealed[grid_y][grid_x]:
+                    if flagged[grid_y][grid_x]:
+                        flagged[grid_y][grid_x] = False
+                    elif not revealed[grid_y][grid_x]:
                         flagged[grid_y][grid_x] = True
+
+                    checkout = 0
+                    for r in range(nbline):
+                        for c in range(nbcoln):
+                            if revealed[r][c] or flagged[r][c]:
+                                checkout += 1
+                                print(checkout, "    ", nbcoln * nbline)
+                    if checkout == nbcoln * nbline:
+                        print("GG")
 
                     break  # Quitter la boucle pour arrêter le jeu
