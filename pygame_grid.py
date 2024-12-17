@@ -182,13 +182,23 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed):
             # Case révélée ou non
             if revealed[grid_y][grid_x]:
                 # Si c'est une mine
-                if table[grid_y][grid_x] == "M":
+                if table[grid_x][grid_y] == "M":
                     pygame.draw.rect(screen, RED, rect, 0)
+                elif table[grid_x][grid_y] == 0:
+                    pygame.draw.rect(screen, GRAY, rect, 0)
+                    if grid_y<len(table[0])-1:
+                        revealed[grid_y + 1][grid_x] = True
+                    if grid_y>0:
+                        revealed[grid_y - 1][grid_x] = True
+                    if grid_x < len(table) - 1:
+                        revealed[grid_y][grid_x + 1] = True
+                    if grid_x > 0:
+                        revealed[grid_y][grid_x - 1] = True
                 else:
                     pygame.draw.rect(screen, GRAY, rect, 0)  # Case sans mine
                     # Affiche la valeur si ce n'est pas vide
                     font = pygame.font.SysFont('Arial', 20)
-                    text = font.render(str(table[grid_y][grid_x]), True, BLACK)
+                    text = font.render(str(table[grid_x][grid_y]), True, BLACK)
                     screen.blit(text, (y + 10, x + 5))
             else:
                 pygame.draw.rect(screen, WHITE, rect, 0)
