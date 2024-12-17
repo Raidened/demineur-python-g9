@@ -1,5 +1,5 @@
 import pygame
-from Grid_Generator import Grid  # Importation de la classe Grid
+from pygame_grid import Grid  # Importation de la classe Grid
 
 def startmenu():
     pygame.font.init()
