@@ -35,6 +35,12 @@ def interface(nbcoln,nbline,tabal,diff):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if (event.type == pygame.MOUSEBUTTONDOWN):
+                    pos = pygame.mouse.get_pos()
+                    posx = pos[0]//30
+                    posy = pos[1]//30
+                    print(posx," ",posy)
+
 
 
 
