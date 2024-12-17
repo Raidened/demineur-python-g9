@@ -8,7 +8,7 @@ class Grid:
         self.rows = rows
         self.cols = cols
         self.mines = mines
-        self.difficulty = difficulty  # Ajout de l'attribut difficulty
+        self.difficulty = difficulty
         self.grid = self.generate_grid()
 
     def generate_grid(self):
@@ -34,6 +34,9 @@ class Grid:
                     grid[nr][nc] += 1
 
         return grid
+
+    def get_grid(self):
+        return self.grid
 
     def save_grid(self, folder="saved_grid"):
         """Sauvegarde la grille dans un fichier JSON avec un numéro incrémenté et la difficulté dans un dossier donné."""

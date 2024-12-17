@@ -1,4 +1,5 @@
 import pygame
+from Grid_Generator import Grid  # Importation de la classe Grid
 
 def startmenu():
     pygame.font.init()
@@ -10,7 +11,6 @@ def startmenu():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     my_font = pygame.font.SysFont('Arial', 50)
     text_jouer = my_font.render('JOUER', False, WHITE)
-
 
     while running:
         pygame.init()
@@ -37,8 +37,7 @@ def startmenu():
                         running = False
 
 def diffmenu():
-    from pygame_grid import interface, drawgrid
-    from Grid_Generator import generate_grid, display_grid, save_grid, create_display_grid
+    from pygame_grid import interface
     pygame.init()
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400
@@ -47,7 +46,6 @@ def diffmenu():
     running = True
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     my_font = pygame.font.SysFont('Arial', 50)
-
 
     while running:
         pygame.init()
@@ -76,15 +74,23 @@ def diffmenu():
                     # Check if the rect collides with the mouse pos.
                     if rect_facile.collidepoint(event.pos):
                         running = False
-                        grid = generate_grid(9, 9, 10)
-                        interface(9,9, grid)
+                        difficulty = "facile"  # Vous pouvez utiliser un nom pour la difficulté
+                        grid = Grid(9, 9, 10, difficulty)  # Passer 'difficulty'
+                        grid.generate_grid()  # Appeler la méthode de génération de la grille
+                        interface(9, 9, grid.get_grid())  # Passer la grille à l'interface
+
                     if rect_moyen.collidepoint(event.pos):
                         running = False
-                        grid = generate_grid(16, 16, 40)
-                        interface(16, 16, grid)
+                        difficulty = "moyen"  # Par exemple
+                        grid = Grid(16, 16, 40, difficulty)  # Passer 'difficulty'
+                        grid.generate_grid()
+                        interface(16, 16, grid.get_grid())
+
                     if rect_diff.collidepoint(event.pos):
                         running = False
-                        grid = generate_grid(30, 16, 99)
-                        interface(30, 16, grid)
+                        difficulty = "difficile"  # Par exemple
+                        grid = Grid(30, 16, 99, difficulty)  # Passer 'difficulty'
+                        grid.generate_grid()
+                        interface(30, 16, grid.get_grid())
 
 startmenu()
