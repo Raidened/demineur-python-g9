@@ -13,7 +13,6 @@ def startmenu():
     text_jouer = my_font.render('JOUER', False, WHITE)
 
     while running:
-        pygame.init()
         rect_play = pygame.Rect(100, 100, 200, 100)
         pygame.draw.rect(screen, WHITE, rect_play, 2)
         rect_quit = pygame.Rect(125, 225, 150, 70)
@@ -28,17 +27,17 @@ def startmenu():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button.
-                    # Check if the rect collides with the mouse pos.
+                if event.button == 1:  # Left mouse button
+                    # Check if the rect collides with the mouse pos
                     if rect_play.collidepoint(event.pos):
                         running = False
-                        diffmenu()
+                        diffmenu()  # Ouvrir le menu de difficulté
                     if rect_quit.collidepoint(event.pos):
                         running = False
 
 def diffmenu():
     from pygame_grid import interface
-    pygame.init()
+    pygame.font.init()
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400
     RED = (255, 0, 0)
@@ -48,7 +47,6 @@ def diffmenu():
     my_font = pygame.font.SysFont('Arial', 50)
 
     while running:
-        pygame.init()
         text_facile = my_font.render('FACILE', False, WHITE)
         rect_facile = pygame.Rect(100, 50, 200, 75)
         pygame.draw.rect(screen, WHITE, rect_facile, 2)
@@ -70,27 +68,27 @@ def diffmenu():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button.
-                    # Check if the rect collides with the mouse pos.
+                if event.button == 1:  # Left mouse button
+                    # Vérifiez si le rectangle de difficulté est cliqué
                     if rect_facile.collidepoint(event.pos):
                         running = False
-                        difficulty = "facile"  # Vous pouvez utiliser un nom pour la difficulté
-                        grid = Grid(9, 9, 10, difficulty)  # Passer 'difficulty'
-                        grid.generate_grid()  # Appeler la méthode de génération de la grille
-                        interface(9, 9, grid.get_grid())  # Passer la grille à l'interface
+                        difficulty = "facile"
+                        grid = Grid(9, 9, 10, difficulty)
+                        grid.generate_grid()
+                        interface(9, 9, grid.get_grid(), grid)  # Passez grid à l'interface
 
                     if rect_moyen.collidepoint(event.pos):
                         running = False
-                        difficulty = "moyen"  # Par exemple
-                        grid = Grid(16, 16, 40, difficulty)  # Passer 'difficulty'
+                        difficulty = "moyen"
+                        grid = Grid(16, 16, 40, difficulty)
                         grid.generate_grid()
-                        interface(16, 16, grid.get_grid())
+                        interface(16, 16, grid.get_grid(), grid)
 
                     if rect_diff.collidepoint(event.pos):
                         running = False
-                        difficulty = "difficile"  # Par exemple
-                        grid = Grid(30, 16, 99, difficulty)  # Passer 'difficulty'
+                        difficulty = "difficile"
+                        grid = Grid(30, 16, 99, difficulty)
                         grid.generate_grid()
-                        interface(30, 16, grid.get_grid())
+                        interface(30, 16, grid.get_grid(), grid)
 
 startmenu()
