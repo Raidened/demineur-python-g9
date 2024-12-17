@@ -2,7 +2,6 @@ import pygame
 from pygame_grid import Grid  # Importation de la classe Grid
 
 def startmenu():
-    print("Welcome to pygame menu")
     pygame.font.init()
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400
@@ -14,6 +13,7 @@ def startmenu():
     text_jouer = my_font.render('JOUER', False, WHITE)
 
     while running:
+        pygame.init()
         rect_play = pygame.Rect(100, 100, 200, 100)
         pygame.draw.rect(screen, WHITE, rect_play, 2)
         rect_quit = pygame.Rect(125, 225, 150, 70)
@@ -48,6 +48,7 @@ def diffmenu():
     my_font = pygame.font.SysFont('Arial', 50)
 
     while running:
+        pygame.init()
         text_facile = my_font.render('FACILE', False, WHITE)
         rect_facile = pygame.Rect(100, 50, 200, 75)
         pygame.draw.rect(screen, WHITE, rect_facile, 2)

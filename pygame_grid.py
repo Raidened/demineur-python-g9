@@ -271,6 +271,33 @@ def interface(nbcoln, nbline, table, game_instance):
                                 revealed[r][c] = True
 
                         # Afficher la grille complète avant de montrer le popup
+                        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine)
+                        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            # Gestion du clic
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Clic gauche
+                    x, y = event.pos
+                    grid_x = x // 30
+                    grid_y = y // 30
+
+                    # Révélation de la case
+                    revealed[grid_y][grid_x] = True
+
+                    # Si une mine est révélée, afficher la défaite
+                    if table[grid_x][grid_y] == "M":
+                        lost_mine = (grid_x, grid_y)  # Garder la position de la mine déclenchée
+
+                        # Révéler toutes les mines après une défaite
+                        for r in range(nbline):
+                            for c in range(nbcoln):
+                                revealed[r][c] = True
+
+                        # Afficher la grille complète avant de montrer le popup
                         drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
                         pygame.display.flip()
 
