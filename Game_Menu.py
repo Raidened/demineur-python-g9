@@ -1,8 +1,11 @@
 def display_menu():
     """Affiche le menu principal."""
+
     print("\n=== Menu Principal ===")
     print("1. Démarrer une partie")
     print("2. Quitter")
+
+
 
 
 def display_difficulty_menu():
@@ -65,6 +68,8 @@ def main():
     while True:
         display_menu()
         choice = input("Veuillez sélectionner une option (1 ou 2) : ")
+        from pygame_menus import startmenu
+        startmenu()
 
         if choice == "1":
             start_game()
