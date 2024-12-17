@@ -158,47 +158,35 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine=Non
             grid_y = x // blocksize
 
             if revealed[grid_y][grid_x]:
-                if table[grid_y][grid_x] == "M":
+                if table[grid_x][grid_y] == "M":
                     pygame.draw.rect(screen, RED, rect, 0)  # Fond rouge pour la mine
                     pygame.draw.circle(screen, BLACK, rect.center, blocksize // 4)  # Dessiner une mine
+                elif table[grid_x][grid_y] == 0:
+                    pygame.draw.rect(screen, GRAY, rect, 0)
+                    if grid_y < len(table[0]) - 1:
+                        revealed[grid_y + 1][grid_x] = True
+                    if grid_y > 0:
+                        revealed[grid_y - 1][grid_x] = True
+                    if grid_x < len(table) - 1:
+                        revealed[grid_y][grid_x + 1] = True
+                    if grid_x > 0:
+                        revealed[grid_y][grid_x - 1] = True
+                    if grid_y < len(table[0]) - 1 and grid_x < len(table) - 1:
+                        revealed[grid_y + 1][grid_x + 1] = True
+                    if grid_y < len(table[0]) - 1 and grid_x > 0:
+                        revealed[grid_y + 1][grid_x - 1] = True
+                    if grid_y > 0 and grid_x < len(table) - 1:
+                        revealed[grid_y - 1][grid_x + 1] = True
+                    if grid_y > 0 and grid_x > 0:
+                        revealed[grid_y - 1][grid_x - 1] = True
                 else:
                     pygame.draw.rect(screen, GRAY, rect, 0)  # Case sans mine
-                    if table[grid_y][grid_x] != 0:
+                    if table[grid_x][grid_y] != 0:
                         font = pygame.font.SysFont('Arial', 20)
-                        text = font.render(str(table[grid_y][grid_x]), True, BLACK)
+                        text = font.render(str(table[grid_x][grid_y]), True, BLACK)
                         screen.blit(text, (y + 10, x + 5))
             else:
                 pygame.draw.rect(screen, WHITE, rect, 0)  # Case non révélée
-                if revealed[grid_y][grid_x]:
-                    if table[grid_x][grid_y] == "M":
-                        pygame.draw.rect(screen, RED, rect, 0)  # Fond rouge pour la mine
-                        pygame.draw.circle(screen, BLACK, rect.center, blocksize // 4)  # Dessiner une mine
-                    elif table[grid_x][grid_y] == 0:
-                        pygame.draw.rect(screen, GRAY, rect, 0)
-                        if grid_y < len(table[0]) - 1:
-                            revealed[grid_y + 1][grid_x] = True
-                        if grid_y > 0:
-                            revealed[grid_y - 1][grid_x] = True
-                        if grid_x < len(table) - 1:
-                            revealed[grid_y][grid_x + 1] = True
-                        if grid_x > 0:
-                            revealed[grid_y][grid_x - 1] = True
-                        if grid_y < len(table[0]) - 1 and grid_x < len(table) - 1:
-                            revealed[grid_y + 1][grid_x + 1] = True
-                        if grid_y < len(table[0]) - 1 and grid_x > 0:
-                            revealed[grid_y + 1][grid_x - 1] = True
-                        if grid_y > 0 and grid_x < len(table) - 1:
-                            revealed[grid_y - 1][grid_x + 1] = True
-                        if grid_y > 0 and grid_x > 0:
-                            revealed[grid_y - 1][grid_x - 1] = True
-                    else:
-                        pygame.draw.rect(screen, GRAY, rect, 0)  # Case sans mine
-                        if table[grid_x][grid_y] != 0:
-                            font = pygame.font.SysFont('Arial', 20)
-                            text = font.render(str(table[grid_x][grid_y]), True, BLACK)
-                            screen.blit(text, (y + 10, x + 5))
-                else:
-                    pygame.draw.rect(screen, WHITE, rect, 0)  # Case non révélée
 
             pygame.draw.rect(screen, BLACK, rect, 2)  # Bordure
 
@@ -263,7 +251,7 @@ def interface(nbcoln, nbline, table, game_instance):
                     revealed[grid_y][grid_x] = True
 
                     # Si une mine est révélée, afficher la défaite
-                    if table[grid_y][grid_x] == "M":
+                    if table[grid_x][grid_y] == "M":
                         lost_mine = (grid_x, grid_y)  # Garder la position de la mine déclenchée
 
                         # Révéler toutes les mines après une défaite
