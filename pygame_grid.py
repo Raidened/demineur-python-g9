@@ -305,14 +305,7 @@ def interface(nbcoln, nbline, table, game_instance):
                                         elif quit_button.collidepoint(x, y):
                                             running = False  # Quitter le jeu
                                             waiting_for_action = False
-                    checkout = 0
-                    for r in range(nbline):
-                        for c in range(nbcoln):
-                            if revealed[r][c] or flagged[r][c]:
-                                checkout += 1
-                                print(checkout, "    ", nbcoln * nbline)
-                    if checkout == nbcoln * nbline:
-                        print("GG")
+
                 elif event.button == 3:
                     x, y = event.pos
                     grid_x = x // 30
@@ -322,13 +315,46 @@ def interface(nbcoln, nbline, table, game_instance):
                     elif not revealed[grid_y][grid_x]:
                         flagged[grid_y][grid_x] = True
 
-                    checkout = 0
-                    for r in range(nbline):
-                        for c in range(nbcoln):
-                            if revealed[r][c] or flagged[r][c]:
-                                checkout += 1
-                                print(checkout, "    ", nbcoln * nbline)
-                    if checkout == nbcoln * nbline:
-                        print("GG")
-
                     break  # Quitter la boucle pour arrêter le jeu
+
+        checkout = 0
+        for r in range(nbline):
+            for c in range(nbcoln):
+                if revealed[r][c] or flagged[r][c]:
+                    checkout += 1
+        if checkout == nbcoln * nbline:
+            # Demander à l'utilisateur s'il veut recommencer
+            restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
+            quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
+
+            pygame.draw.rect(screen, (0, 255, 0), restart_button)
+            pygame.draw.rect(screen, (255, 0, 0), quit_button)
+
+            font = pygame.font.SysFont(None, 30)
+            restart_text = font.render("Recommencer", True, (0, 0, 0))
+            quit_text = font.render("Quitter", True, (0, 0, 0))
+
+            screen.blit(restart_text, (WINDOW_WIDTH // 2 - 60, WINDOW_HEIGHT // 2 + 10))
+            screen.blit(quit_text, (WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT // 2 + 70))
+
+            pygame.display.flip()
+
+            # Attendre l'action de l'utilisateur
+            waiting_for_action = True
+            while waiting_for_action:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                        waiting_for_action = False
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 1:  # Clic gauche
+                            x, y = event.pos
+                            if restart_button.collidepoint(x, y):
+                                # Relancer le jeu en réinitialisant tout le processus
+                                running = False  # Quitter le jeu
+                                startmenu()  # Redémarre le jeu
+
+                                waiting_for_action = False
+                            elif quit_button.collidepoint(x, y):
+                                running = False  # Quitter le jeu
+                                waiting_for_action = False
