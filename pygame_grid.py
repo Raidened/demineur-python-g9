@@ -186,7 +186,7 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost
                         text = font.render(str(table[grid_x][grid_y]), True, BLACK)
                         screen.blit(text, (y + 10, x + 5))
             elif flagged[grid_y][grid_x]:
-                imp = pygame.image.load("images\\flag.png").convert()
+                imp = pygame.image.load("images/flag.png").convert()
                 imp = pygame.transform.scale(imp, (26, 26))
                 screen.blit(imp, (grid_x * 30 + 2, grid_y * 30 + 2))
             else:
@@ -274,8 +274,8 @@ def interface(nbcoln, nbline, table, game_instance):
                         restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
                         quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
 
-                        pygame.draw.rect(screen, (0, 255, 0), restart_button)
-                        pygame.draw.rect(screen, (255, 0, 0), quit_button)
+                        pygame.draw.rect(screen, (161, 242, 255), restart_button)
+                        pygame.draw.rect(screen, (161, 255, 201), quit_button)
 
                         font = pygame.font.SysFont(None, 30)
                         restart_text = font.render("Recommencer", True, (0, 0, 0))
@@ -324,16 +324,21 @@ def interface(nbcoln, nbline, table, game_instance):
                     checkout += 1
         if checkout == nbcoln * nbline:
             # Demander à l'utilisateur s'il veut recommencer
+            win = pygame.Rect(WINDOW_WIDTH /2 - 130, WINDOW_HEIGHT // 4, 260, 50)
             restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
             quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
 
-            pygame.draw.rect(screen, (0, 255, 0), restart_button)
-            pygame.draw.rect(screen, (255, 0, 0), quit_button)
+            pygame.draw.rect(screen, (222, 161, 255), win)
+            pygame.draw.rect(screen, (195, 161, 255), restart_button)
+            pygame.draw.rect(screen, (161, 177, 255), quit_button)
 
             font = pygame.font.SysFont(None, 30)
+
+            win_text = font.render("GG BG t'as vu la rime", True, (0, 0, 0))
             restart_text = font.render("Recommencer", True, (0, 0, 0))
             quit_text = font.render("Quitter", True, (0, 0, 0))
 
+            screen.blit(win_text, (WINDOW_WIDTH // 2 - 100, WINDOW_HEIGHT // 9 + 50))
             screen.blit(restart_text, (WINDOW_WIDTH // 2 - 60, WINDOW_HEIGHT // 2 + 10))
             screen.blit(quit_text, (WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT // 2 + 70))
 
