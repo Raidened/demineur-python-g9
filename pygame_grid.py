@@ -4,6 +4,9 @@ import json
 import os
 from time import sleep
 
+
+
+
 class Grid:
     def __init__(self, rows, cols, mines, difficulty):
         self.rows = rows
@@ -223,7 +226,6 @@ def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
 
 
 def interface(nbcoln, nbline, table, game_instance):
-    from pygame_menus import startmenu
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
     WINDOW_HEIGHT = nbline * 30
     WINDOW_WIDTH = nbcoln * 30
@@ -236,6 +238,8 @@ def interface(nbcoln, nbline, table, game_instance):
 
 
     while running:
+
+
         screen.fill((0, 0, 0))
 
         # Affichage de la grille pendant la partie
@@ -299,6 +303,7 @@ def interface(nbcoln, nbline, table, game_instance):
                                         if restart_button.collidepoint(x, y):
                                             # Relancer le jeu en réinitialisant tout le processus
                                             running = False  # Quitter le jeu
+                                            from pygame_menus import startmenu
                                             startmenu()  # Redémarre le jeu
 
                                             waiting_for_action = False
@@ -352,9 +357,12 @@ def interface(nbcoln, nbline, table, game_instance):
                             if restart_button.collidepoint(x, y):
                                 # Relancer le jeu en réinitialisant tout le processus
                                 running = False  # Quitter le jeu
+                                from pygame_menus import startmenu
                                 startmenu()  # Redémarre le jeu
 
                                 waiting_for_action = False
                             elif quit_button.collidepoint(x, y):
                                 running = False  # Quitter le jeu
                                 waiting_for_action = False
+
+
