@@ -1,4 +1,5 @@
 import pygame
+from pygame_grid import Grid  # Importation de la classe Grid
 
 def startmenu():
     pygame.font.init()
@@ -11,9 +12,7 @@ def startmenu():
     my_font = pygame.font.SysFont('Arial', 50)
     text_jouer = my_font.render('JOUER', False, WHITE)
 
-
     while running:
-        pygame.init()
         rect_play = pygame.Rect(100, 100, 200, 100)
         pygame.draw.rect(screen, WHITE, rect_play, 2)
         rect_quit = pygame.Rect(125, 225, 150, 70)
@@ -28,18 +27,17 @@ def startmenu():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button.
-                    # Check if the rect collides with the mouse pos.
+                if event.button == 1:  # Left mouse button
+                    # Check if the rect collides with the mouse pos
                     if rect_play.collidepoint(event.pos):
                         running = False
-                        diffmenu()
+                        diffmenu()  # Ouvrir le menu de difficulté
                     if rect_quit.collidepoint(event.pos):
                         running = False
 
 def diffmenu():
-    from pygame_grid import interface, drawgrid
-    from Grid_Generator import generate_grid, display_grid, save_grid, create_display_grid
-    pygame.init()
+    from pygame_grid import interface
+    pygame.font.init()
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400
     RED = (255, 0, 0)
@@ -48,9 +46,7 @@ def diffmenu():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     my_font = pygame.font.SysFont('Arial', 50)
 
-
     while running:
-        pygame.init()
         text_facile = my_font.render('FACILE', False, WHITE)
         rect_facile = pygame.Rect(100, 50, 200, 75)
         pygame.draw.rect(screen, WHITE, rect_facile, 2)
@@ -66,25 +62,36 @@ def diffmenu():
         pygame.draw.rect(screen, WHITE, rect_diff, 2)
         screen.blit(text_diff, (103, 260))
 
+
+
         pygame.display.flip()
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button.
-                    # Check if the rect collides with the mouse pos.
+                if event.button == 1:  # Left mouse button
+                    # Vérifiez si le rectangle de difficulté est cliqué
                     if rect_facile.collidepoint(event.pos):
                         running = False
-                        grid = generate_grid(9, 9, 10)
-                        interface(9,9, grid)
+                        difficulty = "facile"
+                        grid = Grid(9, 9, 10, difficulty)
+                        grid.generate_grid()
+                        interface(9, 9, grid.get_grid(), grid)  # Passez grid à l'interface
+
                     if rect_moyen.collidepoint(event.pos):
                         running = False
-                        grid = generate_grid(16, 16, 40)
-                        interface(16, 16, grid)
+                        difficulty = "moyen"
+                        grid = Grid(16, 16, 40, difficulty)
+                        grid.generate_grid()
+                        interface(16, 16, grid.get_grid(), grid)
+
                     if rect_diff.collidepoint(event.pos):
                         running = False
-                        grid = generate_grid(30, 16, 99)
-                        interface(30, 16, grid)
+                        difficulty = "difficile"
+                        grid = Grid(30, 16, 99, difficulty)
+                        grid.generate_grid()
+                        interface(30, 16, grid.get_grid(), grid)
 
 startmenu()
