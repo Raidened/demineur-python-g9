@@ -11,6 +11,8 @@ class Grid:
         self.mines = mines
         self.difficulty = difficulty
         self.grid = self.generate_grid()
+        self.revealed = [[False for _ in range(self.cols)] for _ in range(self.rows)]  # Ajout de revealed
+
 
     def generate_grid(self):
         """Génère une grille avec des mines et les cases adjacentes contenant le nombre de mines."""
@@ -34,6 +36,50 @@ class Grid:
                 if 0 <= nr < self.rows and 0 <= nc < self.cols and grid[nr][nc] != 'M':
                     grid[nr][nc] += 1
 
+        return grid
+
+    def save_game(self):
+        """Sauvegarde l'état du jeu dans un fichier JSON dans le dossier 'saved_grid'."""
+        # Créer le dossier 'saved_grid' si nécessaire
+        save_dir = 'saved_grid'
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        # Trouver un numéro de fichier libre
+        file_number = 1
+        while True:
+            filename = f"saved_grid/grid{file_number}_{self.difficulty}.json"
+            if not os.path.exists(filename):
+                break
+            file_number += 1
+
+        # Sauvegarder l'état du jeu dans le fichier
+        game_state = {
+            'rows': self.rows,
+            'cols': self.cols,
+            'mines': self.mines,
+            'difficulty': self.difficulty,
+            'grid': self.grid,
+            'revealed': self.revealed  # Ajout de l'état des cases révélées
+        }
+
+        with open(filename, 'w') as f:
+            json.dump(game_state, f)
+        print(f"Partie sauvegardée sous {filename}!")
+
+    def load_game(cls, filename):
+        """Charge l'état du jeu depuis un fichier JSON."""
+        if not os.path.exists(filename):
+            print("Aucune partie sauvegardée trouvée!")
+            return None
+
+        with open(filename, 'r') as f:
+            game_state = json.load(f)
+
+        grid = cls(game_state['rows'], game_state['cols'], game_state['mines'], game_state['difficulty'])
+        grid.grid = game_state['grid']
+        grid.revealed = game_state['revealed']  # Récupérer l'état des cases révélées
+        print("Partie chargée!")
         return grid
 
     def get_grid(self):
@@ -80,6 +126,38 @@ class Game:
     def game_menu(self):
         """Le menu principal du jeu."""
         print("=== Bienvenue dans le jeu de Démineur ===")
+        print("Choisissez une option:")
+        print("1. Démarrer une nouvelle partie")
+        print("2. Charger une partie sauvegardée")
+        print("3. Quitter")
+
+        choice = input("Entrez votre choix : ")
+        return choice
+
+    def start_game(self):
+        """Démarre la partie."""
+        choice = self.game_menu
+
+        if choice == '1':
+            # Nouvelle partie
+            rows, cols, mines, difficulty = self.game_menu_difficulty
+            grid = Grid(rows, cols, mines, difficulty)
+            print("Jeu démarré !")
+            # Code pour démarrer la partie ici
+
+        elif choice == '2':
+            # Charger une partie sauvegardée
+            grid = Grid.load_game('saved_game.json')
+            if grid:
+                print("Partie chargée avec succès!")
+                # Code pour démarrer la partie avec les données chargées
+
+        elif choice == '3':
+            print("Merci d'avoir joué!")
+            exit()
+
+    def game_menu_difficulty(self):
+        """Choisir la difficulté."""
         print("Choisissez une difficulté:")
         print("1. Facile (9x9, 10 mines)")
         print("2. Moyen (16x16, 40 mines)")
@@ -87,61 +165,14 @@ class Game:
 
         choice = input("Entrez le numéro de la difficulté : ")
         if choice == '1':
-            self.rows, self.cols, self.mines = 9, 9, 10
-            self.difficulty = "facile"
+            return 9, 9, 10, "facile"
         elif choice == '2':
-            self.rows, self.cols, self.mines = 16, 16, 40
-            self.difficulty = "moyen"
+            return 16, 16, 40, "moyen"
         elif choice == '3':
-            self.rows, self.cols, self.mines = 30, 30, 100
-            self.difficulty = "difficile"
+            return 30, 30, 100, "difficile"
         else:
             print("Choix invalide. La difficulté par défaut 'facile' a été sélectionnée.")
-            self.rows, self.cols, self.mines = 9, 9, 10
-            self.difficulty = "facile"
-
-    def load_grid(self, folder="saved_grid"):
-        """Charge une grille depuis un fichier JSON dans un dossier donné."""
-        files = os.listdir(folder)
-        grid_files = [f for f in files if f.startswith('grid') and f.endswith('.json')]
-
-        if not grid_files:
-            print("Aucune grille sauvegardée trouvée.")
-            return None
-
-        latest_file = max(grid_files, key=lambda f: int(f.replace('grid', '').replace('.json', '').split('_')[1]))
-        filepath = os.path.join(folder, latest_file)
-
-        try:
-            with open(filepath, 'r') as file:
-                grid = json.load(file)
-            print(f"Grille rechargée depuis {latest_file}")
-            return grid
-        except json.JSONDecodeError:
-            print(f"Erreur de lecture dans le fichier {latest_file}")
-            return None
-
-    def start_game(self):
-        """Démarre la partie après avoir choisi la difficulté."""
-        self.game_menu()
-        self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)
-        self.display = DisplayGrid(self.rows, self.cols)
-
-        # Sauvegarde de la grille
-        self.grid.save_grid()
-
-        # Affichage de la grille d'affichage à côté de la grille de jeu
-        self.display.display(self.grid.grid)
-
-        # Attente d'un moment pour l'utilisateur avant de commencer la partie
-        print("\nLa partie commence !")
-        sleep(2)
-
-    def run(self):
-        """Lance l'interface du jeu."""
-        self.start_game()  # Démarre la partie
-        # Passez `self` comme `game_instance` à `interface`
-        interface(self.rows, self.cols, self.grid.get_grid(), self)
+            return 9, 9, 10, "facile"
 
 def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine=None):
     """Dessine la grille avec les mines et les cases révélées."""
@@ -300,6 +331,15 @@ def interface(nbcoln, nbline, table, game_instance):
                                         elif quit_button.collidepoint(x, y):
                                             running = False  # Quitter le jeu
                                             waiting_for_action = False
-                        break  # Quitter la boucle pour arrêter le jeu
+
+            # Sauvegarder la partie
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:  # Touche S pour sauvegarder
+                    if isinstance(game_instance, Grid):  # Vérifiez si game_instance est bien une instance de Grid
+                        game_instance.save_game()  # Sauvegarder le jeu
+                    else:
+                        print ("Erreur")
+
+                break  # Quitter la boucle pour arrêter le jeu
 
 
