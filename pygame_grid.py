@@ -5,6 +5,7 @@ import os
 from time import sleep
 from datetime import datetime
 
+
 class Grid:
     def __init__(self, rows, cols, mines, difficulty):
         self.rows = rows
@@ -19,9 +20,10 @@ class Grid:
         # Convert first_click to tuple if it's a list
         if isinstance(first_click, list):
             first_click = tuple(first_click)
-            
+
         if self.mines > self.rows * self.cols - len(self.get_adjacent_cells(first_click)):
-            raise ValueError("Le nombre de mines dépasse la capacité de la grille après exclusion de la première case et de ses adjacents.")
+            raise ValueError(
+                "Le nombre de mines dépasse la capacité de la grille après exclusion de la première case et de ses adjacents.")
 
         all_positions = [(r, c) for r in range(self.rows) for c in range(self.cols)]
         safe_positions = self.get_adjacent_cells(first_click) + [first_click]
@@ -45,11 +47,11 @@ class Grid:
         # Convert position to tuple if it's a list
         if isinstance(position, list):
             position = tuple(position)
-        
+
         r, c = position
         directions = [(-1, -1), (-1, 0), (-1, 1),
-                      (0, -1),          (0, 1),
-                      (1, -1),  (1, 0), (1, 1)]
+                      (0, -1), (0, 1),
+                      (1, -1), (1, 0), (1, 1)]
         adjacent = []
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
@@ -68,6 +70,7 @@ class Grid:
         self.display.display(self.grid)
         print("\nNouvelle partie !")
         sleep(2)
+
 
 class DisplayGrid:
     def __init__(self, rows, cols):
@@ -89,6 +92,7 @@ class DisplayGrid:
             row_display_str = ' '.join(f"{str(cell):<{cell_width}}" for cell in row_display)
             print(f"{row_game_str}   {row_display_str}")
 
+
 class Game:
     def __init__(self):
         """Initialise le jeu avec les paramètres de difficulté et le jeu de la grille."""
@@ -106,7 +110,7 @@ class Game:
         # Initialize the grid and display
         self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)
         self.display = DisplayGrid(self.rows, self.cols)
-        
+
         # Remove the save_grid call from here
         self.run(screen)
 
@@ -127,7 +131,8 @@ class Game:
                     print(f"Grille rechargée depuis {filename}")
                     revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
                     first_click = data.get("first_click")
-                    return data["grid"], data["rows"], data["cols"], data["mines"], data["difficulty"], revealed, first_click
+                    return data["grid"], data["rows"], data["cols"], data["mines"], data[
+                        "difficulty"], revealed, first_click
                 else:
                     raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
             except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
@@ -152,7 +157,8 @@ class Game:
                     print(f"Grille rechargée depuis {latest_file}")
                     revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
                     first_click = data.get("first_click")
-                    return data["grid"], data["rows"], data["cols"], data["mines"], data["difficulty"], revealed, first_click
+                    return data["grid"], data["rows"], data["cols"], data["mines"], data[
+                        "difficulty"], revealed, first_click
                 else:
                     raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
             except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
@@ -175,7 +181,7 @@ class Game:
         """Sauvegarde la grille avec les paramètres du jeu."""
         # Convert first_click_pos to tuple before saving
         first_click = tuple(self.first_click_pos) if self.first_click_pos else None
-        
+
         grid_file = f"saved_grid/grid_{difficulty}_{int(datetime.now().timestamp())}.json"
         data = {
             "rows": self.rows,
@@ -198,7 +204,8 @@ class Game:
 
     def load_and_display_game(self, screen, game_file):
         game_instance = Game()
-        loaded_grid, rows, cols, mines, difficulty, revealed, first_click = game_instance.load_grid(folder="saved_grid", filename=game_file)
+        loaded_grid, rows, cols, mines, difficulty, revealed, first_click = game_instance.load_grid(folder="saved_grid",
+                                                                                                    filename=game_file)
         if loaded_grid:
             game_instance.rows = rows
             game_instance.cols = cols
@@ -212,10 +219,11 @@ class Game:
         else:
             # Handle error if grid cannot be loaded
             error_font = pygame.font.SysFont('Arial', 30)
-            error_text = error_font.render("Failed to load the selected game.", True, RED)
+            error_text = error_font.render("Failed to load the selected game.", True, (255,0,0))
             screen.blit(error_text, (50, 200))
             pygame.display.flip()
             sleep(2)
+
 
 def drawgrid(screen, table, revealed, blocksize, lost_mine=None, player_name=None):
     """Dessine la grille avec les mines et les cases révélées."""
@@ -273,6 +281,7 @@ def drawgrid(screen, table, revealed, blocksize, lost_mine=None, player_name=Non
         text = font.render(f"Player: {player_name}", True, WHITE)
         screen.blit(text, (10, 10))
 
+
 def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
     """Affiche un popup avec un message de défaite et les options de recommencer ou quitter."""
     font = pygame.font.SysFont('Arial', 30)
@@ -295,6 +304,7 @@ def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
     pygame.display.flip()
 
     return restart_button, quit_button
+
 
 def interface(nbcoln, nbline, table, revealed, game_instance, screen):
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
@@ -352,10 +362,10 @@ def interface(nbcoln, nbline, table, revealed, game_instance, screen):
                                 game_instance.grid.generate_grid((grid_y, grid_x))
                                 game_instance.save_grid(table, game_instance.difficulty, revealed)
                             first_click = False
-                            
+
                         # Reveal only the clicked cell and process its neighbors
                         revealed[grid_y][grid_x] = True
-                        
+
                         # If clicked cell is 0, reveal adjacent cells
                         if table[grid_y][grid_x] == 0:
                             stack = [(grid_y, grid_x)]
@@ -364,8 +374,8 @@ def interface(nbcoln, nbline, table, revealed, game_instance, screen):
                                 for dy in [-1, 0, 1]:
                                     for dx in [-1, 0, 1]:
                                         ny, nx = curr_y + dy, curr_x + dx
-                                        if (0 <= ny < nbline and 0 <= nx < nbcoln and 
-                                            not revealed[ny][nx]):
+                                        if (0 <= ny < nbline and 0 <= nx < nbcoln and
+                                                not revealed[ny][nx]):
                                             revealed[ny][nx] = True
                                             if table[ny][nx] == 0:
                                                 stack.append((ny, nx))
@@ -384,7 +394,8 @@ def interface(nbcoln, nbline, table, revealed, game_instance, screen):
 
                             # Demander à l'utilisateur s'il veut recommencer
                             WINDOW_WIDTH, WINDOW_HEIGHT = screen.get_size()  # Added line
-                            restart_button, quit_button = game_over_popup(screen, "Vous avez perdu!", WINDOW_WIDTH, WINDOW_HEIGHT)
+                            restart_button, quit_button = game_over_popup(screen, "Vous avez perdu!", WINDOW_WIDTH,
+                                                                          WINDOW_HEIGHT)
 
                             # Attendre l'action de l'utilisateur
                             waiting_for_action = True
@@ -400,7 +411,8 @@ def interface(nbcoln, nbline, table, revealed, game_instance, screen):
                                                 # Reset the game state without changing difficulty
                                                 running = False
                                                 game_instance.end_game(score=0)  # Save the game even if lost
-                                                game_instance.start_game(screen)  # Restart the game with the same difficulty
+                                                game_instance.start_game(
+                                                    screen)  # Restart the game with the same difficulty
                                                 return
                                             elif quit_button.collidepoint(x, y):
                                                 pygame.quit()
@@ -411,6 +423,7 @@ def interface(nbcoln, nbline, table, revealed, game_instance, screen):
         drawgrid(screen, table, revealed, blocksize, lost_mine)
 
         pygame.display.flip()
+
 
 def show_scores(screen, difficulty):
     scores_file = f"saved_grid/scores_{difficulty}.json"
@@ -425,12 +438,14 @@ def show_scores(screen, difficulty):
     y_offset = 50
 
     for score in scores:
-        text = font.render(f"Name: {score['name']}, Score: {score['score']}, Date: {score['date']}", True, (255, 255, 255))
+        text = font.render(f"Name: {score['name']}, Score: {score['score']}, Date: {score['date']}", True,
+                           (255, 255, 255))
         screen.blit(text, (50, y_offset))
         y_offset += 40
 
     pygame.display.flip()
     sleep(5)  # Display the scores for 5 seconds
+
 
 def hall_of_fame(screen):
     difficulties = ["facile", "moyen", "difficile"]
@@ -445,21 +460,12 @@ def hall_of_fame(screen):
         show_scores(screen, difficulty)
         screen.blit(text, (50, 20))
 
-
-
         pygame.display.flip()
         sleep(2)  # Display the difficulty title for 2 seconds
         show_scores(screen, difficulty)
-
-
 
         screen.blit(text, (50, 20))
 
-
-
         pygame.display.flip()
         sleep(2)  # Display the difficulty title for 2 seconds
         show_scores(screen, difficulty)
-
-
-

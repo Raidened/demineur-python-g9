@@ -2,10 +2,12 @@ import pygame
 from pygame_grid import Grid, show_scores, hall_of_fame, Game, interface, DisplayGrid
 import json
 import os
+import time
 
 # Define color constants globally
 WHITE = (200, 200, 200)
 RED = (255, 0, 0)
+
 
 def startmenu():
     pygame.font.init()
@@ -25,19 +27,19 @@ def startmenu():
         pygame.draw.rect(screen, WHITE, rect_hall_of_fame, 2)
         rect_quit = pygame.Rect(125, 375, 150, 70)
         pygame.draw.rect(screen, RED, rect_quit, 2)
-        
+
         screen.blit(text_jouer, (130, 120))
         screen.blit(text_hall_of_fame, (80, 270))
         my_font = pygame.font.SysFont('Arial', 30)
         text_quit = my_font.render('QUITTER', False, RED)
         screen.blit(text_quit, (145, 390))
-        
+
         # Add "VIEW GAME" button
         text_view_game = my_font.render('VIEW GAME', False, WHITE)
         rect_view_game = pygame.Rect(100, 350, 200, 75)
         pygame.draw.rect(screen, WHITE, rect_view_game, 2)
         screen.blit(text_view_game, (120, 360))
-        
+
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -60,6 +62,7 @@ def startmenu():
                     if rect_view_game.collidepoint(event.pos):
                         running = False
                         view_game_menu(screen)
+
 
 def diffmenu(screen):
     pygame.font.init()
@@ -124,6 +127,7 @@ def diffmenu(screen):
                         # show_scores(screen, game.difficulty)
                         game.start_game(screen)
 
+
 def get_player_name(screen):
     """Prompt the player to enter their nickname."""
     player_name = ""
@@ -149,6 +153,7 @@ def get_player_name(screen):
         pygame.display.flip()
     return player_name
 
+
 # Add the new view_game_menu function
 def view_game_menu(screen):
     pygame.font.init()
@@ -168,7 +173,7 @@ def view_game_menu(screen):
         for index, game in enumerate(saved_games):
             rect = pygame.Rect(100, 100 + index * 50, 400, 40)  # Made wider to fit more text
             pygame.draw.rect(screen, WHITE, rect, 2)
-            
+
             # Load game data to display more info
             try:
                 with open(os.path.join('saved_grid', game), 'r') as file:
@@ -176,7 +181,7 @@ def view_game_menu(screen):
                     display_text = f"{data.get('player_name', 'Unknown')} - {data.get('difficulty', '?')} - {data.get('date', '?')}"
             except:
                 display_text = game
-                
+
             text = my_font.render(display_text, True, WHITE)
             screen.blit(text, (110, 110 + index * 50))
             buttons.append((rect, game))
@@ -198,6 +203,7 @@ def view_game_menu(screen):
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
+
 # Modify load_and_display_game to handle the additional game parameters
 def load_and_display_game(screen, game_file):
     game_instance = Game()
@@ -210,14 +216,14 @@ def load_and_display_game(screen, game_file):
         game_instance.difficulty = difficulty
         game_instance.first_click_pos = first_click  # Store the first click position
         game_instance.grid = Grid(rows, cols, mines, difficulty)
-        
+
         # If we have a first click position, use it to generate the grid
         if first_click:
             game_instance.grid.generate_grid(first_click)
             game_instance.grid.mines_placed = True
             # Reveal the first clicked cell
             revealed[first_click[0]][first_click[1]] = True
-            
+
             # If it's a 0, reveal adjacent cells
             if loaded_grid[first_click[0]][first_click[1]] == 0:
                 stack = [first_click]
@@ -226,12 +232,12 @@ def load_and_display_game(screen, game_file):
                     for dy in [-1, 0, 1]:
                         for dx in [-1, 0, 1]:
                             ny, nx = curr_y + dy, curr_x + dx
-                            if (0 <= ny < rows and 0 <= nx < cols and 
-                                not revealed[ny][nx]):
+                            if (0 <= ny < rows and 0 <= nx < cols and
+                                    not revealed[ny][nx]):
                                 revealed[ny][nx] = True
                                 if loaded_grid[ny][nx] == 0:
                                     stack.append((ny, nx))
-        
+
         game_instance.grid.grid = loaded_grid
         game_instance.display = DisplayGrid(rows, cols)
         interface(cols, rows, loaded_grid, revealed, game_instance, screen)
@@ -241,6 +247,7 @@ def load_and_display_game(screen, game_file):
         error_text = error_font.render("Failed to load the selected game.", True, RED)
         screen.blit(error_text, (50, 200))
         pygame.display.flip()
-        sleep(2)
+        time.sleep(2)
+
 
 startmenu()
