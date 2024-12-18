@@ -4,6 +4,9 @@ import json
 import os
 from time import sleep
 
+
+
+
 class Grid:
     def __init__(self, rows, cols, mines, difficulty):
         self.rows = rows
@@ -36,50 +39,6 @@ class Grid:
                 if 0 <= nr < self.rows and 0 <= nc < self.cols and grid[nr][nc] != 'M':
                     grid[nr][nc] += 1
 
-        return grid
-
-    def save_game(self):
-        """Sauvegarde l'état du jeu dans un fichier JSON dans le dossier 'saved_grid'."""
-        # Créer le dossier 'saved_grid' si nécessaire
-        save_dir = 'saved_grid'
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-
-        # Trouver un numéro de fichier libre
-        file_number = 1
-        while True:
-            filename = f"saved_grid/grid{file_number}_{self.difficulty}.json"
-            if not os.path.exists(filename):
-                break
-            file_number += 1
-
-        # Sauvegarder l'état du jeu dans le fichier
-        game_state = {
-            'rows': self.rows,
-            'cols': self.cols,
-            'mines': self.mines,
-            'difficulty': self.difficulty,
-            'grid': self.grid,
-            'revealed': self.revealed  # Ajout de l'état des cases révélées
-        }
-
-        with open(filename, 'w') as f:
-            json.dump(game_state, f)
-        print(f"Partie sauvegardée sous {filename}!")
-
-    def load_game(cls, filename):
-        """Charge l'état du jeu depuis un fichier JSON."""
-        if not os.path.exists(filename):
-            print("Aucune partie sauvegardée trouvée!")
-            return None
-
-        with open(filename, 'r') as f:
-            game_state = json.load(f)
-
-        grid = cls(game_state['rows'], game_state['cols'], game_state['mines'], game_state['difficulty'])
-        grid.grid = game_state['grid']
-        grid.revealed = game_state['revealed']  # Récupérer l'état des cases révélées
-        print("Partie chargée!")
         return grid
 
     def get_grid(self):
@@ -126,38 +85,6 @@ class Game:
     def game_menu(self):
         """Le menu principal du jeu."""
         print("=== Bienvenue dans le jeu de Démineur ===")
-        print("Choisissez une option:")
-        print("1. Démarrer une nouvelle partie")
-        print("2. Charger une partie sauvegardée")
-        print("3. Quitter")
-
-        choice = input("Entrez votre choix : ")
-        return choice
-
-    def start_game(self):
-        """Démarre la partie."""
-        choice = self.game_menu
-
-        if choice == '1':
-            # Nouvelle partie
-            rows, cols, mines, difficulty = self.game_menu_difficulty
-            grid = Grid(rows, cols, mines, difficulty)
-            print("Jeu démarré !")
-            # Code pour démarrer la partie ici
-
-        elif choice == '2':
-            # Charger une partie sauvegardée
-            grid = Grid.load_game('saved_game.json')
-            if grid:
-                print("Partie chargée avec succès!")
-                # Code pour démarrer la partie avec les données chargées
-
-        elif choice == '3':
-            print("Merci d'avoir joué!")
-            exit()
-
-    def game_menu_difficulty(self):
-        """Choisir la difficulté."""
         print("Choisissez une difficulté:")
         print("1. Facile (9x9, 10 mines)")
         print("2. Moyen (16x16, 40 mines)")
@@ -165,16 +92,63 @@ class Game:
 
         choice = input("Entrez le numéro de la difficulté : ")
         if choice == '1':
-            return 9, 9, 10, "facile"
+            self.rows, self.cols, self.mines = 9, 9, 10
+            self.difficulty = "facile"
         elif choice == '2':
-            return 16, 16, 40, "moyen"
+            self.rows, self.cols, self.mines = 16, 16, 40
+            self.difficulty = "moyen"
         elif choice == '3':
-            return 30, 30, 100, "difficile"
+            self.rows, self.cols, self.mines = 30, 30, 100
+            self.difficulty = "difficile"
         else:
             print("Choix invalide. La difficulté par défaut 'facile' a été sélectionnée.")
-            return 9, 9, 10, "facile"
+            self.rows, self.cols, self.mines = 9, 9, 10
+            self.difficulty = "facile"
 
-def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine=None):
+    def load_grid(self, folder="saved_grid"):
+        """Charge une grille depuis un fichier JSON dans un dossier donné."""
+        files = os.listdir(folder)
+        grid_files = [f for f in files if f.startswith('grid') and f.endswith('.json')]
+
+        if not grid_files:
+            print("Aucune grille sauvegardée trouvée.")
+            return None
+
+        latest_file = max(grid_files, key=lambda f: int(f.replace('grid', '').replace('.json', '').split('_')[1]))
+        filepath = os.path.join(folder, latest_file)
+
+        try:
+            with open(filepath, 'r') as file:
+                grid = json.load(file)
+            print(f"Grille rechargée depuis {latest_file}")
+            return grid
+        except json.JSONDecodeError:
+            print(f"Erreur de lecture dans le fichier {latest_file}")
+            return None
+
+    def start_game(self):
+        """Démarre la partie après avoir choisi la difficulté."""
+        self.game_menu()
+        self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)
+        self.display = DisplayGrid(self.rows, self.cols)
+
+        # Sauvegarde de la grille
+        self.grid.save_grid()
+
+        # Affichage de la grille d'affichage à côté de la grille de jeu
+        self.display.display(self.grid.grid)
+
+        # Attente d'un moment pour l'utilisateur avant de commencer la partie
+        print("\nLa partie commence !")
+        sleep(2)
+
+    def run(self):
+        """Lance l'interface du jeu."""
+        self.start_game()  # Démarre la partie
+        # Passez `self` comme `game_instance` à `interface`
+        interface(self.rows, self.cols, self.grid.get_grid(), self)
+
+def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine=None):
     """Dessine la grille avec les mines et les cases révélées."""
     BLACK = (0, 0, 0)
     RED = (255, 0, 0)
@@ -216,6 +190,10 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine=Non
                         font = pygame.font.SysFont('Arial', 20)
                         text = font.render(str(table[grid_x][grid_y]), True, BLACK)
                         screen.blit(text, (y + 10, x + 5))
+            elif flagged[grid_y][grid_x]:
+                imp = pygame.image.load("images/flag.png").convert()
+                imp = pygame.transform.scale(imp, (26, 26))
+                screen.blit(imp, (grid_x * 30 + 2, grid_y * 30 + 2))
             else:
                 pygame.draw.rect(screen, WHITE, rect, 0)  # Case non révélée
 
@@ -257,14 +235,18 @@ def interface(nbcoln, nbline, table, game_instance):
     running = True
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Cases révélées
+    flagged = [[False for _ in range(nbcoln)] for _ in range(nbline)]
     lost_mine = None  # Variable pour stocker la position de la mine déclenchée
     running = True
 
+
     while running:
+
+
         screen.fill((0, 0, 0))
 
         # Affichage de la grille pendant la partie
-        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine)
+        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
 
         pygame.display.flip()
 
@@ -292,15 +274,15 @@ def interface(nbcoln, nbline, table, game_instance):
                                 revealed[r][c] = True
 
                         # Afficher la grille complète avant de montrer le popup
-                        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, lost_mine)
+                        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
                         pygame.display.flip()
 
                         # Demander à l'utilisateur s'il veut recommencer
                         restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
                         quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
 
-                        pygame.draw.rect(screen, (0, 255, 0), restart_button)
-                        pygame.draw.rect(screen, (255, 0, 0), quit_button)
+                        pygame.draw.rect(screen, (161, 242, 255), restart_button)
+                        pygame.draw.rect(screen, (161, 255, 201), quit_button)
 
                         font = pygame.font.SysFont(None, 30)
                         restart_text = font.render("Recommencer", True, (0, 0, 0))
@@ -323,12 +305,23 @@ def interface(nbcoln, nbline, table, game_instance):
                                         x, y = event.pos
                                         if restart_button.collidepoint(x, y):
                                             # Relancer le jeu en réinitialisant tout le processus
+                                            running = False  # Quitter le jeu
+                                            from pygame_menus import startmenu
                                             startmenu()  # Redémarre le jeu
-                                            revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Réinitialiser les cases révélées
+
                                             waiting_for_action = False
                                         elif quit_button.collidepoint(x, y):
                                             running = False  # Quitter le jeu
                                             waiting_for_action = False
+
+                elif event.button == 3:
+                    x, y = event.pos
+                    grid_x = x // 30
+                    grid_y = y // 30
+                    if flagged[grid_y][grid_x]:
+                        flagged[grid_y][grid_x] = False
+                    elif not revealed[grid_y][grid_x]:
+                        flagged[grid_y][grid_x] = True
 
             # Sauvegarder la partie
             if event.type == pygame.KEYDOWN:
@@ -340,4 +333,50 @@ def interface(nbcoln, nbline, table, game_instance):
 
                 break  # Quitter la boucle pour arrêter le jeu
 
+        checkout = 0
+        for r in range(nbline):
+            for c in range(nbcoln):
+                if revealed[r][c] or flagged[r][c]:
+                    checkout += 1
+        if checkout == nbcoln * nbline:
+            # Demander à l'utilisateur s'il veut recommencer
+            win = pygame.Rect(WINDOW_WIDTH /2 - 130, WINDOW_HEIGHT // 4, 260, 50)
+            restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
+            quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
 
+            pygame.draw.rect(screen, (222, 161, 255), win)
+            pygame.draw.rect(screen, (195, 161, 255), restart_button)
+            pygame.draw.rect(screen, (161, 177, 255), quit_button)
+
+            font = pygame.font.SysFont(None, 30)
+
+            win_text = font.render("GG BG t'as vu la rime", True, (0, 0, 0))
+            restart_text = font.render("Recommencer", True, (0, 0, 0))
+            quit_text = font.render("Quitter", True, (0, 0, 0))
+
+            screen.blit(win_text, (WINDOW_WIDTH // 2 - 100, WINDOW_HEIGHT // 9 + 50))
+            screen.blit(restart_text, (WINDOW_WIDTH // 2 - 60, WINDOW_HEIGHT // 2 + 10))
+            screen.blit(quit_text, (WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT // 2 + 70))
+
+            pygame.display.flip()
+
+            # Attendre l'action de l'utilisateur
+            waiting_for_action = True
+            while waiting_for_action:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                        waiting_for_action = False
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 1:  # Clic gauche
+                            x, y = event.pos
+                            if restart_button.collidepoint(x, y):
+                                # Relancer le jeu en réinitialisant tout le processus
+                                running = False  # Quitter le jeu
+                                from pygame_menus import startmenu
+                                startmenu()  # Redémarre le jeu
+
+                                waiting_for_action = False
+                            elif quit_button.collidepoint(x, y):
+                                running = False  # Quitter le jeu
+                                waiting_for_action = False
