@@ -250,6 +250,7 @@ def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
 
 
 def interface(nbcoln, nbline, table, game_instance):
+    from pygame_menus import startmenu
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
     WINDOW_HEIGHT = nbline * 30
     WINDOW_WIDTH = nbcoln * 30
@@ -322,11 +323,8 @@ def interface(nbcoln, nbline, table, game_instance):
                                         x, y = event.pos
                                         if restart_button.collidepoint(x, y):
                                             # Relancer le jeu en réinitialisant tout le processus
-                                            game_instance.start_game()  # Redémarre le jeu
-                                            # Réinitialiser la grille
-                                            table = game_instance.grid.generate_grid()
+                                            startmenu()  # Redémarre le jeu
                                             revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Réinitialiser les cases révélées
-                                            lost_mine = None  # Réinitialiser la mine déclenchée
                                             waiting_for_action = False
                                         elif quit_button.collidepoint(x, y):
                                             running = False  # Quitter le jeu
