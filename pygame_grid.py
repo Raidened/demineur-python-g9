@@ -79,6 +79,50 @@ class Grid:
         print("Partie chargée!")
         return grid
 
+    def load_grid(self, folder="saved_grid", filename=None):
+        """Charge une grille et ses paramètres depuis un fichier JSON dans un dossier donné."""
+        if filename:
+            filepath = os.path.join(folder, filename)
+            try:
+                with open(filepath, 'r') as file:
+                    data = json.load(file)
+                if isinstance(data, dict):
+                    print(f"Grille rechargée depuis {filename}")
+                    revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
+                    first_click = data.get("first_click")
+                    return data["rows"], data["cols"], data["mines"], data[
+                        "difficulty"], data["grid"], revealed, first_click
+                else:
+                    raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
+            except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
+                print(f"Erreur de lecture dans le fichier {filename}: {e}")
+                return None, None, None, None, None, None, None
+        else:
+            grid_files = [f for f in os.listdir(folder) if f.startswith('grid') and f.endswith('.json')]
+            if not grid_files:
+                print("Aucune grille sauvegardée trouvée.")
+                return None, None, None, None, None
+            latest_file = max(
+                grid_files,
+                key=lambda f: os.path.getmtime(os.path.join(folder, f))
+            )
+            filepath = os.path.join(folder, latest_file)
+            try:
+                with open(filepath, 'r') as file:
+                    data = json.load(file)
+                if isinstance(data, dict):
+                    print(f"Grille rechargée depuis {latest_file}")
+                    revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
+                    first_click = data.get("first_click")
+                    return data["grid"], data["rows"], data["cols"], data["mines"], data[
+                        "difficulty"], revealed, first_click
+                else:
+                    raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
+            except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
+                print(f"Erreur de lecture dans le fichier {latest_file}: {e}")
+                return None, None, None, None, None, None, None
+
+
     def get_grid(self):
         return self.grid
 
@@ -143,26 +187,48 @@ class Game:
             self.rows, self.cols, self.mines = 9, 9, 10
             self.difficulty = "facile"
 
-    def load_grid(self, folder="saved_grid"):
-        """Charge une grille depuis un fichier JSON dans un dossier donné."""
-        files = os.listdir(folder)
-        grid_files = [f for f in files if f.startswith('grid') and f.endswith('.json')]
-
-        if not grid_files:
-            print("Aucune grille sauvegardée trouvée.")
-            return None
-
-        latest_file = max(grid_files, key=lambda f: int(f.replace('grid', '').replace('.json', '').split('_')[1]))
-        filepath = os.path.join(folder, latest_file)
-
-        try:
-            with open(filepath, 'r') as file:
-                grid = json.load(file)
-            print(f"Grille rechargée depuis {latest_file}")
-            return grid
-        except json.JSONDecodeError:
-            print(f"Erreur de lecture dans le fichier {latest_file}")
-            return None
+    def load_grid(self, folder="saved_grid", filename=None):
+        """Charge une grille et ses paramètres depuis un fichier JSON dans un dossier donné."""
+        if filename:
+            filepath = os.path.join(folder, filename)
+            try:
+                with open(filepath, 'r') as file:
+                    data = json.load(file)
+                if isinstance(data, dict):
+                    print(f"Grille rechargée depuis {filename}")
+                    revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
+                    first_click = data.get("first_click")
+                    return data["rows"], data["cols"], data["mines"], data[
+                        "difficulty"], data["grid"], revealed, first_click
+                else:
+                    raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
+            except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
+                print(f"Erreur de lecture dans le fichier {filename}: {e}")
+                return None, None, None, None, None, None, None
+        else:
+            grid_files = [f for f in os.listdir(folder) if f.startswith('grid') and f.endswith('.json')]
+            if not grid_files:
+                print("Aucune grille sauvegardée trouvée.")
+                return None, None, None, None, None
+            latest_file = max(
+                grid_files,
+                key=lambda f: os.path.getmtime(os.path.join(folder, f))
+            )
+            filepath = os.path.join(folder, latest_file)
+            try:
+                with open(filepath, 'r') as file:
+                    data = json.load(file)
+                if isinstance(data, dict):
+                    print(f"Grille rechargée depuis {latest_file}")
+                    revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
+                    first_click = data.get("first_click")
+                    return data["grid"], data["rows"], data["cols"], data["mines"], data[
+                        "difficulty"], revealed, first_click
+                else:
+                    raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
+            except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
+                print(f"Erreur de lecture dans le fichier {latest_file}: {e}")
+                return None, None, None, None, None, None, None
 
     def start_game(self):
         """Démarre la partie après avoir choisi la difficulté."""
@@ -188,6 +254,7 @@ class Game:
 
 def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine=None):
     """Dessine la grille avec les mines et les cases révélées."""
+
     BLACK = (0, 0, 0)
     RED = (255, 0, 0)
     WHITE = (200, 200, 200)
@@ -240,6 +307,7 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost
             if lost_mine and (grid_x, grid_y) == lost_mine:
                 pygame.draw.rect(screen, RED, rect, 0)  # Fond rouge pour la mine
                 pygame.draw.circle(screen, BLACK, rect.center, blocksize // 4)  # Dessiner une mine
+
 
 def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
     """Affiche un popup avec un message de défaite et les options de recommencer ou quitter."""
