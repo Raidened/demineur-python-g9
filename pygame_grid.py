@@ -41,6 +41,44 @@ class Grid:
 
         return grid
 
+    def save_game(self):
+        """Sauvegarde l'état du jeu dans un fichier JSON dans le dossier 'saved_grid'."""
+        # Créer le dossier 'saved_grid' si nécessaire
+        save_dir = 'saved_grid'
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        # Trouver un numéro de fichier libre
+        file_number = 1
+        while True:
+            filename = f"saved_grid/grid{file_number}_{self.difficulty}.json"
+            if not os.path.exists(filename):
+                break
+            file_number += 1
+        # Sauvegarder l'état du jeu dans le fichier
+        game_state = {
+            'rows': self.rows,
+            'cols': self.cols,
+            'mines': self.mines,
+            'difficulty': self.difficulty,
+            'grid': self.grid,
+            'revealed': self.revealed  # Ajout de l'état des cases révélées
+        }
+        with open(filename, 'w') as f:
+            json.dump(game_state, f)
+        print(f"Partie sauvegardée sous {filename}!")
+    def load_game(cls, filename):
+        """Charge l'état du jeu depuis un fichier JSON."""
+        if not os.path.exists(filename):
+            print("Aucune partie sauvegardée trouvée!")
+            return None
+        with open(filename, 'r') as f:
+            game_state = json.load(f)
+        grid = cls(game_state['rows'], game_state['cols'], game_state['mines'], game_state['difficulty'])
+        grid.grid = game_state['grid']
+        grid.revealed = game_state['revealed']  # Récupérer l'état des cases révélées
+        print("Partie chargée!")
+        return grid
+
     def get_grid(self):
         return self.grid
 
@@ -228,7 +266,6 @@ def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
 
 
 def interface(nbcoln, nbline, table, game_instance):
-    from pygame_menus import startmenu
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
     WINDOW_HEIGHT = nbline * 30
     WINDOW_WIDTH = nbcoln * 30
@@ -340,7 +377,7 @@ def interface(nbcoln, nbline, table, game_instance):
                     checkout += 1
         if checkout == nbcoln * nbline:
             # Demander à l'utilisateur s'il veut recommencer
-            win = pygame.Rect(WINDOW_WIDTH /2 - 130, WINDOW_HEIGHT // 4, 260, 50)
+            win = pygame.Rect(WINDOW_WIDTH /2 - 130, WINDOW_HEIGHT // 2 - 100, 260, 50)
             restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
             quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
 
@@ -354,7 +391,7 @@ def interface(nbcoln, nbline, table, game_instance):
             restart_text = font.render("Recommencer", True, (0, 0, 0))
             quit_text = font.render("Quitter", True, (0, 0, 0))
 
-            screen.blit(win_text, (WINDOW_WIDTH // 2 - 100, WINDOW_HEIGHT // 9 + 50))
+            screen.blit(win_text, (WINDOW_WIDTH // 2 - 100, WINDOW_HEIGHT // 2 - 85))
             screen.blit(restart_text, (WINDOW_WIDTH // 2 - 60, WINDOW_HEIGHT // 2 + 10))
             screen.blit(quit_text, (WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT // 2 + 70))
 
