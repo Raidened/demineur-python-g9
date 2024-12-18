@@ -3,12 +3,14 @@ import pygame
 import json
 import os
 from time import sleep
+import datetime
 
 
 
 
 class Grid:
     def __init__(self, rows, cols, mines, difficulty):
+        self.player_name = "Anonyme"
         self.rows = rows
         self.cols = cols
         self.mines = mines
@@ -55,13 +57,18 @@ class Grid:
                 break
             file_number += 1
         # Sauvegarder l'état du jeu dans le fichier
+        datenow = datetime.datetime.now()
+        with open(filename, 'w') as f:
+            json.dump(self.grid, f)
         game_state = {
             'rows': self.rows,
             'cols': self.cols,
             'mines': self.mines,
             'difficulty': self.difficulty,
             'grid': self.grid,
-            'revealed': self.revealed  # Ajout de l'état des cases révélées
+            'revealed': self.revealed,  # Ajout de l'état des cases révélées
+            'name':self.player_name,
+            'date': str(datenow)[:-4]
         }
         with open(filename, 'w') as f:
             json.dump(game_state, f)
@@ -73,7 +80,7 @@ class Grid:
             return None
         with open(filename, 'r') as f:
             game_state = json.load(f)
-        grid = cls(game_state['rows'], game_state['cols'], game_state['mines'], game_state['difficulty'])
+        grid = cls(game_state['rows'], game_state['cols'], game_state['mines'], game_state['difficulty'], game_state['name'])
         grid.grid = game_state['grid']
         grid.revealed = game_state['revealed']  # Récupérer l'état des cases révélées
         print("Partie chargée!")

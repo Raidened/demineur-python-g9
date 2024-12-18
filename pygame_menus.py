@@ -59,6 +59,7 @@ def diffmenu():
     my_font = pygame.font.SysFont('Arial', 50)
 
     while running:
+        screen.fill((60, 40, 100))
         text_facile = my_font.render('FACILE', False, WHITE)
         rect_facile = pygame.Rect(100, 50, 200, 75)
         pygame.draw.rect(screen, WHITE, rect_facile, 2)
@@ -111,6 +112,7 @@ def diffmenu():
 
 def get_player_name(screen):
     """Prompt the player to enter their nickname."""
+    screen.fill((120, 80, 200))
     player_name = ""
     input_active = True
     while input_active:
@@ -125,7 +127,7 @@ def get_player_name(screen):
                     player_name = player_name[:-1]
                 else:
                     player_name += event.unicode
-        screen.fill((0, 0, 0))
+
         font = pygame.font.SysFont('Arial', 30)
         prompt = font.render("Enter your nickname:", True, (255,255,255))
         name_display = font.render(player_name, True, (255,255,255))
@@ -138,6 +140,58 @@ def get_player_name(screen):
 
 
 def view_game_menu(screen):
+    screen = pygame.display.set_mode((600, 400))
+    game_instance = Game()
+    pygame.font.init()
+    my_font = pygame.font.SysFont('Arial', 30)
+    running = True
+    # Retrieve list of saved games
+    saved_games = [f for f in os.listdir('saved_grid') if f.startswith('grid') and f.endswith('.json')]
+    while running:
+        screen.fill((60,40,100))
+        title = my_font.render('Select a Game to View', True, (255,255,255))
+        screen.blit(title, (100, 50))
+        # Display saved games as buttons
+        buttons = []
+        for index, game in enumerate(saved_games):
+            rect = pygame.Rect(10, 110 + index * 50, 580, 40)  # Made wider to fit more text
+            pygame.draw.rect(screen, (255,255,255), rect, 2)
+
+            # Load game data to display more info
+            try:
+                with open(os.path.join('saved_grid', game), 'r') as file:
+                    data = json.load(file)
+                    display_text = f"{data.get('name', 'Unknown')} - {data.get('difficulty', '?')} - {data.get('date', '?')}"
+            except:
+                display_text = game
+
+            text = my_font.render(display_text, True, (255,255,255))
+            screen.blit(text, (20, 110 + index * 50))
+            buttons.append((rect, game))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    for rect, game in buttons:
+                        if rect.collidepoint(event.pos):
+                            running = False
+                            loadgrid = game_instance.load_grid(folder="saved_grid", filename=game)
+                            rows, cols, mines, difficulty, grid, revealed, firstclick = loadgrid
+                            print(rows, cols, difficulty, grid, mines, revealed, firstclick)
+                            newgrid = Grid(rows, cols, mines, difficulty)
+                            newgrid.grid = grid
+                            newgrid.revealed = revealed
+                            running = False
+                            interface(cols, rows, newgrid.get_grid(), newgrid)  # Pass the selected game file
+                            break
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+
+def hall_of_fame(screen):
     game_instance = Game()
     pygame.font.init()
     my_font = pygame.font.SysFont('Arial', 30)
