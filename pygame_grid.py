@@ -264,8 +264,6 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost
 
     BLACK = (0, 0, 0)
     RED = (255, 0, 0)
-    WHITE = (200, 200, 200)
-    GRAY = (150, 150, 150)
     blocksize = 30
 
     for x in range(0, WINDOW_HEIGHT, blocksize):
@@ -273,6 +271,12 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost
             rect = pygame.Rect(y, x, blocksize, blocksize)
             grid_x = y // blocksize
             grid_y = x // blocksize
+            gridxmax = WINDOW_HEIGHT // blocksize
+            gridymax = WINDOW_WIDTH // blocksize
+            truc= grid_y * (gridymax//15) *5
+            truc2 = grid_x * (gridxmax//15) *5
+            WHITE = (0 + truc , 0, 104 + truc2)
+            GRAY = (100 + truc2 , 100, 255 - truc)
 
             if revealed[grid_y][grid_x]:
                 if table[grid_x][grid_y] == "M":

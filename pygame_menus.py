@@ -18,15 +18,19 @@ def startmenu():
 
     while running:
         screen.fill((30,20,50))
-        rect_play = pygame.Rect(100, 100, 200, 100)
+        rect_play = pygame.Rect(WINDOW_WIDTH/4, WINDOW_HEIGHT//4, WINDOW_WIDTH//2, WINDOW_WIDTH//4)
         pygame.draw.rect(screen, WHITE, rect_play, 2)
         rect_quit = pygame.Rect(300, 320, 90, 70)
         pygame.draw.rect(screen, RED, rect_quit, 2)
         rect_load = pygame.Rect(25, 225, 150, 70)
         pygame.draw.rect(screen, WHITE, rect_load, 2)
+        rect_hof = pygame.Rect(225, 225, 150, 70)
+        pygame.draw.rect(screen, WHITE, rect_hof, 2)
         screen.blit(text_jouer, (130, 120))
         text_load = my_font.render('LOAD', False, WHITE)
         screen.blit(text_load, (65, 240))
+        text_hof = my_font.render('HALL OF \n FAME', False, WHITE)
+        screen.blit(text_hof, (265, 240))
         my_font = pygame.font.SysFont('Arial', 30)
         text_quit = my_font.render('QUIT', False, RED)
         screen.blit(text_quit, (315, 335))
@@ -45,6 +49,9 @@ def startmenu():
                     if rect_load.collidepoint(event.pos):
                         running = False
                         view_game_menu(screen)
+                    if rect_hof.collidepoint(event.pos):
+                        running = False
+                        hall_of_fame(screen)
         pygame.display.flip()
 
 def diffmenu():
