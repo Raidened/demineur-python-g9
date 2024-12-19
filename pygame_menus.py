@@ -26,7 +26,7 @@ def startmenu():
         pygame.draw.rect(screen, WHITE, rect_load, 2)
         rect_hof = pygame.Rect(225, 225, 150, 70)
         pygame.draw.rect(screen, WHITE, rect_hof, 2)
-        screen.blit(text_jouer, (130, 120))
+        screen.blit(text_jouer, (WINDOW_WIDTH/3.1, WINDOW_HEIGHT/3.3))
         text_load = my_font.render('LOAD', False, WHITE)
         screen.blit(text_load, (65, 240))
         text_hof = my_font.render('HALL OF \n FAME', False, WHITE)
