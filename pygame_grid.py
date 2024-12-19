@@ -74,93 +74,8 @@ class Grid:
         with open(filename, 'w') as f:
             json.dump(game_state, f)
         print(f"Partie sauvegardée sous {filename}!")
-    def load_game(cls, filename):
-        """Charge l'état du jeu depuis un fichier JSON."""
-        if not os.path.exists(filename):
-            print("Aucune partie sauvegardée trouvée!")
-            return None
-        with open(filename, 'r') as f:
-            game_state = json.load(f)
-        grid = cls(game_state['rows'], game_state['cols'], game_state['mines'], game_state['difficulty'], game_state['name'])
-        grid.grid = game_state['grid']
-        grid.revealed = game_state['revealed']  # Récupérer l'état des cases révélées
-        print("Partie chargée!")
-        return grid
-
-    def load_grid(self, folder="saved_grid", filename=None):
-        """Charge une grille et ses paramètres depuis un fichier JSON dans un dossier donné."""
-        if filename:
-            filepath = os.path.join(folder, filename)
-            try:
-                with open(filepath, 'r') as file:
-                    data = json.load(file)
-                if isinstance(data, dict):
-                    print(f"Grille rechargée depuis {filename}")
-                    revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
-                    first_click = data.get("first_click")
-                    return data["rows"], data["cols"], data["mines"], data[
-                        "difficulty"], data["grid"], revealed, first_click
-                else:
-                    raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
-            except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
-                print(f"Erreur de lecture dans le fichier {filename}: {e}")
-                return None, None, None, None, None, None, None
-        else:
-            grid_files = [f for f in os.listdir(folder) if f.startswith('grid') and f.endswith('.json')]
-            if not grid_files:
-                print("Aucune grille sauvegardée trouvée.")
-                return None, None, None, None, None
-            latest_file = max(
-                grid_files,
-                key=lambda f: os.path.getmtime(os.path.join(folder, f))
-            )
-            filepath = os.path.join(folder, latest_file)
-            try:
-                with open(filepath, 'r') as file:
-                    data = json.load(file)
-                if isinstance(data, dict):
-                    print(f"Grille rechargée depuis {latest_file}")
-                    revealed = data.get("revealed", [[False for _ in range(data["cols"])] for _ in range(data["rows"])])
-                    first_click = data.get("first_click")
-                    return data["grid"], data["rows"], data["cols"], data["mines"], data[
-                        "difficulty"], revealed, first_click
-                else:
-                    raise ValueError("Le fichier JSON ne contient pas un dictionnaire.")
-            except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
-                print(f"Erreur de lecture dans le fichier {latest_file}: {e}")
-                return None, None, None, None, None, None, None
 
 
-    def get_grid(self):
-        return self.grid
-
-    def restart_game(self):
-        """Redémarre le jeu avec une nouvelle grille."""
-        self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)  # Créer une nouvelle instance de Grid
-        self.display = DisplayGrid(self.rows, self.cols)
-        self.display.display(self.grid.grid)
-        print("\nNouvelle partie !")
-        sleep(2)
-
-class DisplayGrid:
-    def __init__(self, rows, cols):
-        """Initialise la grille d'affichage avec des symboles '*'."""
-        self.rows = rows
-        self.cols = cols
-        self.grid_display = self.create_display_grid()
-
-    def create_display_grid(self):
-        """Crée une grille d'affichage vide avec des symboles pour les cases non révélées."""
-        return [['*' for _ in range(self.cols)] for _ in range(self.rows)]
-
-    def display(self, game_grid):
-        """Affiche la grille de jeu et la grille d'affichage côte à côte."""
-        print("\n=== Grille de jeu ===               === Grille d'affichage ===")
-        cell_width = 3
-        for row_game, row_display in zip(game_grid, self.grid_display):
-            row_game_str = ' '.join(f"{str(cell):<{cell_width}}" for cell in row_game)
-            row_display_str = ' '.join(f"{str(cell):<{cell_width}}" for cell in row_display)
-            print(f"{row_game_str}   {row_display_str}")
 
 class Game:
     def __init__(self):
@@ -172,29 +87,6 @@ class Game:
         self.grid = None
         self.display = None
 
-    def game_menu(self):
-        """Le menu principal du jeu."""
-        print("=== Bienvenue dans le jeu de Démineur ===")
-        print("Choisissez une difficulté:")
-        print("1. Facile (9x9, 10 mines)")
-        print("2. Moyen (16x16, 40 mines)")
-        print("3. Difficile (30x30, 100 mines)")
-
-        choice = input("Entrez le numéro de la difficulté : ")
-        if choice == '1':
-            self.rows, self.cols, self.mines = 9, 9, 10
-            self.difficulty = "facile"
-        elif choice == '2':
-            self.rows, self.cols, self.mines = 16, 16, 40
-            self.difficulty = "moyen"
-        elif choice == '3':
-            self.rows, self.cols, self.mines = 30, 30, 100
-            self.difficulty = "difficile"
-        else:
-            print("Choix invalide. La difficulté par défaut 'facile' a été sélectionnée.")
-            self.rows, self.cols, self.mines = 9, 9, 10
-            self.difficulty = "facile"
-
     def load_grid(self, folder="saved_grid", filename=None):
         """Charge une grille et ses paramètres depuis un fichier JSON dans un dossier donné."""
         if filename:
@@ -237,28 +129,6 @@ class Game:
             except (json.JSONDecodeError, KeyError, FileNotFoundError, ValueError) as e:
                 print(f"Erreur de lecture dans le fichier {latest_file}: {e}")
                 return None, None, None, None, None, None, None
-
-    def start_game(self):
-        """Démarre la partie après avoir choisi la difficulté."""
-        self.game_menu()
-        self.grid = Grid(self.rows, self.cols, self.mines, self.difficulty)
-        self.display = DisplayGrid(self.rows, self.cols)
-
-        # Sauvegarde de la grille
-        self.grid.save_grid()
-
-        # Affichage de la grille d'affichage à côté de la grille de jeu
-        self.display.display(self.grid.grid)
-
-        # Attente d'un moment pour l'utilisateur avant de commencer la partie
-        print("\nLa partie commence !")
-        sleep(2)
-
-    def run(self):
-        """Lance l'interface du jeu."""
-        self.start_game()  # Démarre la partie
-        # Passez `self` comme `game_instance` à `interface`
-        interface(self.rows, self.cols, self.grid.get_grid(), self)
 
 def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine=None):
     """Dessine la grille avec les mines et les cases révélées."""
@@ -346,7 +216,7 @@ def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
     return restart_button, quit_button
 
 
-def interface(nbcoln, nbline, table, game_instance):
+def interface(nbcoln, nbline, table, game_instance, isfirst):
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
     WINDOW_HEIGHT = nbline * 30
     WINDOW_WIDTH = nbcoln * 30
@@ -378,10 +248,15 @@ def interface(nbcoln, nbline, table, game_instance):
             # Gestion du clic
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Clic gauche
+
                     x, y = event.pos
                     grid_x = x // 30
                     grid_y = y // 30
-
+                    if isfirst:
+                        while table[grid_x][grid_y] != 0:
+                            game_instance.grid = game_instance.generate_grid()
+                            table=game_instance.grid
+                    isfirst = False
                     # Révélation de la case
                     revealed[grid_y][grid_x] = True
 
@@ -404,8 +279,8 @@ def interface(nbcoln, nbline, table, game_instance):
                         restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
                         quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
 
-                        pygame.draw.rect(screen, (161, 242, 255), restart_button)
-                        pygame.draw.rect(screen, (161, 255, 201), quit_button)
+                        pygame.draw.rect(screen, (195, 161, 255), restart_button)
+                        pygame.draw.rect(screen, (161, 177, 255), quit_button)
 
                         font = pygame.font.SysFont(None, 30)
                         restart_text = font.render("Recommencer", True, (0, 0, 0))

@@ -2,7 +2,7 @@ import json
 import os
 
 import pygame
-from pygame_grid import Grid, DisplayGrid, Game, interface  # Importation de la classe Grid
+from pygame_grid import Grid,  Game, interface  # Importation de la classe Grid
 
 def startmenu():
     print("Welcome to pygame menu")
@@ -71,7 +71,6 @@ def startmenu():
         pygame.display.flip()
 
 def diffmenu():
-    from pygame_grid import interface
     pygame.font.init()
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400
@@ -118,7 +117,7 @@ def diffmenu():
                         grid = Grid(9, 9, 10, difficulty)
                         grid.generate_grid()
                         grid.player_name = get_player_name(screen)
-                        interface(9, 9, grid.get_grid(), grid)  # Passez grid à l'interface
+                        interface(9, 9, grid.grid, grid, True)  # Passez grid à l'interface
 
                     if rect_moyen.collidepoint(event.pos):
                         running = False
@@ -126,7 +125,7 @@ def diffmenu():
                         grid = Grid(16, 16, 40, difficulty)
                         grid.generate_grid()
                         grid.player_name = get_player_name(screen)
-                        interface(16, 16, grid.get_grid(), grid)
+                        interface(16, 16, grid.grid, grid,True)
 
                     if rect_diff.collidepoint(event.pos):
                         running = False
@@ -134,7 +133,7 @@ def diffmenu():
                         grid = Grid(30, 16, 99, difficulty)
                         grid.generate_grid()
                         grid.player_name = get_player_name(screen)
-                        interface(30, 16, grid.get_grid(), grid)
+                        interface(30, 16, grid.grid, grid,True)
 
                     if rect_back.collidepoint(event.pos):
                         running = False
@@ -216,7 +215,6 @@ def view_game_menu():
                         startmenu()
                     for rect, game in buttons:
                         if rect.collidepoint(event.pos):
-                            running = False
                             loadgrid = game_instance.load_grid(folder="saved_grid", filename=game)
                             rows, cols, mines, difficulty, grid, revealed, firstclick = loadgrid
                             print(rows, cols, difficulty, grid, mines, revealed, firstclick)
@@ -224,7 +222,7 @@ def view_game_menu():
                             newgrid.grid = grid
                             newgrid.revealed = revealed
                             running = False
-                            interface(cols, rows, newgrid.get_grid(), newgrid)  # Pass the selected game file
+                            interface(rows, cols, newgrid.grid, newgrid, False)  # Pass the selected game file
                             break
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -283,7 +281,7 @@ def hall_of_fame(diff):
                             newgrid.grid = grid
                             newgrid.revealed = revealed
                             running = False
-                            interface(cols, rows, newgrid.get_grid(), newgrid)  # Pass the selected game file
+                            interface(cols, rows, newgrid.grid, newgrid, False)  # Pass the selected game file
                             break
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
