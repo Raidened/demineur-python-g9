@@ -2,7 +2,7 @@ import random
 import pygame
 import json
 import os
-from time import sleep
+from time import sleep, time_ns
 import datetime
 
 
@@ -17,6 +17,7 @@ class Grid:
         self.difficulty = difficulty
         self.grid = self.generate_grid()
         self.revealed = [[False for _ in range(self.cols)] for _ in range(self.rows)]  # Ajout de revealed
+        self.score = None
 
 
     def generate_grid(self):
@@ -43,16 +44,15 @@ class Grid:
 
         return grid
 
-    def save_game(self):
+    def save_game(self,save_dir):
         """Sauvegarde l'état du jeu dans un fichier JSON dans le dossier 'saved_grid'."""
         # Créer le dossier 'saved_grid' si nécessaire
-        save_dir = 'saved_grid'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         # Trouver un numéro de fichier libre
         file_number = 1
         while True:
-            filename = f"saved_grid/grid{file_number}_{self.difficulty}.json"
+            filename = f"{save_dir}/grid{file_number}_{self.difficulty}.json"
             if not os.path.exists(filename):
                 break
             file_number += 1
@@ -68,7 +68,8 @@ class Grid:
             'grid': self.grid,
             'revealed': self.revealed,  # Ajout de l'état des cases révélées
             'name':self.player_name,
-            'date': str(datenow)[:-4]
+            'date': str(datenow)[:-4],
+            'score': self.score
         }
         with open(filename, 'w') as f:
             json.dump(game_state, f)
@@ -307,7 +308,8 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost
                         text = font.render(str(table[grid_x][grid_y]), True, BLACK)
                         screen.blit(text, (y + 10, x + 5))
             elif flagged[grid_y][grid_x]:
-                imp = pygame.image.load("images/flag.png").convert()
+                pygame.draw.rect(screen, WHITE, rect, 0)
+                imp = pygame.image.load("images/flag.png").convert_alpha()
                 imp = pygame.transform.scale(imp, (26, 26))
                 screen.blit(imp, (grid_x * 30 + 2, grid_y * 30 + 2))
             else:
@@ -348,18 +350,21 @@ def interface(nbcoln, nbline, table, game_instance):
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
     WINDOW_HEIGHT = nbline * 30
     WINDOW_WIDTH = nbcoln * 30
-    running = True
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Cases révélées
     flagged = [[False for _ in range(nbcoln)] for _ in range(nbline)]
     lost_mine = None  # Variable pour stocker la position de la mine déclenchée
     running = True
+    score_start = time_ns()//1000000
+    lose=False
+    print(score_start)
 
 
     while running:
 
 
         screen.fill((0, 0, 0))
+
 
         # Affichage de la grille pendant la partie
         drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
@@ -382,6 +387,8 @@ def interface(nbcoln, nbline, table, game_instance):
 
                     # Si une mine est révélée, afficher la défaite
                     if table[grid_x][grid_y] == "M":
+                        lose = True
+
                         lost_mine = (grid_x, grid_y)  # Garder la position de la mine déclenchée
 
                         # Révéler toutes les mines après une défaite
@@ -415,7 +422,6 @@ def interface(nbcoln, nbline, table, game_instance):
                             for event in pygame.event.get():
                                 if event.type == pygame.QUIT:
                                     running = False
-                                    waiting_for_action = False
                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                     if event.button == 1:  # Clic gauche
                                         x, y = event.pos
@@ -443,7 +449,7 @@ def interface(nbcoln, nbline, table, game_instance):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:  # Touche S pour sauvegarder
                     if isinstance(game_instance, Grid):  # Vérifiez si game_instance est bien une instance de Grid
-                        game_instance.save_game()  # Sauvegarder le jeu
+                        game_instance.save_game('saved_grid')  # Sauvegarder le jeu
                     else:
                         print ("Erreur")
 
@@ -452,9 +458,24 @@ def interface(nbcoln, nbline, table, game_instance):
         checkout = 0
         for r in range(nbline):
             for c in range(nbcoln):
-                if revealed[r][c] or flagged[r][c]:
+                if revealed[r][c]:
                     checkout += 1
-        if checkout == nbcoln * nbline:
+                elif flagged[r][c]:
+                    if table[c][r] == "M":
+                        checkout += 1
+        if checkout >= nbcoln * nbline and not lose:
+
+            score_end = time_ns() // 1000000
+            score=score_end - score_start
+            print(score_start, "    ", score_end, "    ", score_end - score_start)
+            print(max(score_start, score_end))
+            game_instance.score = score_end - score_start
+            game_instance.save_game('hof/'+game_instance.difficulty)
+            scoresec = "GG fini en " + str((score // 1000) % 60) + "." + str(score % 1000)
+            if score%60000>1 :
+                scoresec= "GG fini en "+str(score//100000)+":"+str((score//1000)%60)+"."+str(score%1000)
+
+            drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
             # Demander à l'utilisateur s'il veut recommencer
             win = pygame.Rect(WINDOW_WIDTH /2 - 130, WINDOW_HEIGHT // 2 - 100, 260, 50)
             restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
@@ -466,7 +487,7 @@ def interface(nbcoln, nbline, table, game_instance):
 
             font = pygame.font.SysFont(None, 30)
 
-            win_text = font.render("GG BG t'as vu la rime", True, (0, 0, 0))
+            win_text = font.render(scoresec, True, (0, 0, 0))
             restart_text = font.render("Recommencer", True, (0, 0, 0))
             quit_text = font.render("Quitter", True, (0, 0, 0))
 
@@ -482,7 +503,6 @@ def interface(nbcoln, nbline, table, game_instance):
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-                        waiting_for_action = False
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1:  # Clic gauche
                             x, y = event.pos
