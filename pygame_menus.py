@@ -5,7 +5,6 @@ import pygame
 from pygame_grid import Grid,  Game, interface  # Importation de la classe Grid
 
 def startmenu():
-    print("Welcome to pygame menu")
     pygame.font.init()
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400

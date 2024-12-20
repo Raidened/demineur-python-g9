@@ -342,9 +342,7 @@ def interface(nbcoln, nbline, table, game_instance, isfirst):
 
             score_end = time_ns() // 1000000
             score=score_end - score_start
-            print(score_start, "    ", score_end, "    ", score_end - score_start)
-            print(max(score_start, score_end))
-            game_instance.score = score_end - score_start
+            game_instance.score = score
             game_instance.save_game('hof/'+game_instance.difficulty)
             scoresec = "GG fini en " + str((score // 1000) % 60) + "." + str(score % 1000)
             if score%60000>1 :
