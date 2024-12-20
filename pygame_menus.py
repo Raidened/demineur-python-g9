@@ -175,6 +175,8 @@ def view_game_menu():
     my_font = pygame.font.SysFont('Arial', 30)
     running = True
     # Retrieve list of saved games
+    if not os.path.exists('saved_grid'):
+        os.makedirs('saved_grid')
     saved_games = [f for f in os.listdir('saved_grid') if f.startswith('grid') and f.endswith('.json')]
     while running:
         screen.fill((60,40,100))
@@ -234,6 +236,10 @@ def hall_of_fame(diff):
     my_font = pygame.font.SysFont('Arial', 30)
     running = True
     # Retrieve list of saved games
+    if not os.path.exists('hof'):
+        os.makedirs('hof')
+    if not os.path.exists('hof/'+diff):
+        os.makedirs('hof/'+diff)
     saved_games = [f for f in os.listdir('hof/'+diff) if f.startswith('grid') and f.endswith('.json')]
 
     while running:

@@ -47,6 +47,8 @@ class Grid:
     def save_game(self,save_dir):
         """Sauvegarde l'état du jeu dans un fichier JSON dans le dossier 'saved_grid'."""
         # Créer le dossier 'saved_grid' si nécessaire
+        if not os.path.exists('hof'):
+            os.makedirs('hof')
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         # Trouver un numéro de fichier libre
@@ -331,7 +333,7 @@ def interface(nbcoln, nbline, table, game_instance, isfirst):
                     grid_y = y // 30
                     if flagged[grid_y][grid_x]:
                         flagged[grid_y][grid_x] = False
-                    elif not revealed[grid_y][grid_x]:
+                    elif not revealed[grid_y][grid_x] and nbflags > 0:
                         flagged[grid_y][grid_x] = True
 
             # Sauvegarder la partie
