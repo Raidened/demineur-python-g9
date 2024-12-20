@@ -230,6 +230,7 @@ def interface(nbcoln, nbline, table, game_instance, isfirst):
     print(score_start)
 
 
+
     while running:
 
 
@@ -244,8 +245,13 @@ def interface(nbcoln, nbline, table, game_instance, isfirst):
         font = pygame.font.SysFont(None, 30)
         time_text = font.render(livetime, True, (255, 255, 255))
         screen.blit(time_text, (20, WINDOW_HEIGHT - 35))
-        bombs_text = font.render(str(game_instance.mines)+" bombes", True, (255, 0, 0))
-        screen.blit(bombs_text, (150, WINDOW_HEIGHT - 35))
+        nbflags = game_instance.mines
+        for r in range(nbline):
+            for c in range(nbcoln):
+                if flagged[r][c]:
+                    nbflags-=1
+        bombs_text = font.render(str(nbflags)+" flags left", True, (255, 0, 0))
+        screen.blit(bombs_text, (100, WINDOW_HEIGHT - 35))
 
         pygame.display.flip()
 
