@@ -218,7 +218,7 @@ def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
 
 def interface(nbcoln, nbline, table, game_instance, isfirst):
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
-    WINDOW_HEIGHT = nbline * 30
+    WINDOW_HEIGHT = nbline * 30 +50
     WINDOW_WIDTH = nbcoln * 30
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     revealed = [[False for _ in range(nbcoln)] for _ in range(nbline)]  # Cases révélées
@@ -237,7 +237,15 @@ def interface(nbcoln, nbline, table, game_instance, isfirst):
 
 
         # Affichage de la grille pendant la partie
-        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
+        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT-50, table, revealed, flagged, lost_mine)
+        score_current = time_ns() // 1000000
+        score = score_current- score_start
+        livetime= str(score//100000)+":"+str((score//1000)%60)+"."+(str(score%1000))[:-1]
+        font = pygame.font.SysFont(None, 30)
+        time_text = font.render(livetime, True, (255, 255, 255))
+        screen.blit(time_text, (20, WINDOW_HEIGHT - 35))
+        bombs_text = font.render(str(game_instance.mines)+" bombes", True, (255, 0, 0))
+        screen.blit(bombs_text, (150, WINDOW_HEIGHT - 35))
 
         pygame.display.flip()
 
@@ -272,7 +280,7 @@ def interface(nbcoln, nbline, table, game_instance, isfirst):
                                 revealed[r][c] = True
 
                         # Afficher la grille complète avant de montrer le popup
-                        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
+                        drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT-50, table, revealed, flagged, lost_mine)
                         pygame.display.flip()
 
                         # Demander à l'utilisateur s'il veut recommencer
@@ -344,11 +352,9 @@ def interface(nbcoln, nbline, table, game_instance, isfirst):
             score=score_end - score_start
             game_instance.score = score
             game_instance.save_game('hof/'+game_instance.difficulty)
-            scoresec = "GG fini en " + str((score // 1000) % 60) + "." + str(score % 1000)
-            if score%60000>1 :
-                scoresec= "GG fini en "+str(score//100000)+":"+str((score//1000)%60)+"."+str(score%1000)
+            scoresec= "GG fini en "+str(score//100000)+":"+str((score//1000)%60)+"."+str(score%1000)
 
-            drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost_mine)
+            drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT-50, table, revealed, flagged, lost_mine)
             # Demander à l'utilisateur s'il veut recommencer
             win = pygame.Rect(WINDOW_WIDTH /2 - 130, WINDOW_HEIGHT // 2 - 100, 260, 50)
             restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
