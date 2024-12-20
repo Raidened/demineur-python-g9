@@ -193,31 +193,6 @@ def drawgrid(screen, WINDOW_WIDTH, WINDOW_HEIGHT, table, revealed, flagged, lost
                 pygame.draw.rect(screen, RED, rect, 0)  # Fond rouge pour la mine
                 pygame.draw.circle(screen, BLACK, rect.center, blocksize // 4)  # Dessiner une mine
 
-
-def game_over_popup(screen, lost_message, WINDOW_WIDTH, WINDOW_HEIGHT):
-    """Affiche un popup avec un message de défaite et les options de recommencer ou quitter."""
-    font = pygame.font.SysFont('Arial', 30)
-    text = font.render(lost_message, True, (255, 0, 0))
-    screen.blit(text, (WINDOW_WIDTH // 2 - text.get_width() // 2, WINDOW_HEIGHT // 3))
-
-    # Création des boutons
-    restart_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2, 150, 50)
-    quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 75, WINDOW_HEIGHT // 2 + 60, 150, 50)
-
-    pygame.draw.rect(screen, (0, 255, 0), restart_button)  # Vert pour recommencer
-    pygame.draw.rect(screen, (255, 0, 0), quit_button)  # Rouge pour quitter
-
-    restart_text = font.render("Recommencer", True, (0, 0, 0))
-    quit_text = font.render("Quitter", True, (0, 0, 0))
-
-    screen.blit(restart_text, (WINDOW_WIDTH // 2 - 60, WINDOW_HEIGHT // 2 + 10))
-    screen.blit(quit_text, (WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT // 2 + 70))
-
-    pygame.display.flip()
-
-    return restart_button, quit_button
-
-
 def interface(nbcoln, nbline, table, game_instance, isfirst):
     """Interface principale pour afficher le jeu et gérer la logique de la partie."""
     WINDOW_HEIGHT = nbline * 30 +50
